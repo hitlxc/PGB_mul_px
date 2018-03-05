@@ -1714,7 +1714,7 @@ csso@~2.3.1:
     clap "^1.0.9"
     source-map "^0.5.3"
 
-cz-conventional-changelog@^2.0.0:
+cz-conventional-changelog@^2.1.0:
   version "2.1.0"
   resolved "http://npm.byted.org/cz-conventional-changelog/-/cz-conventional-changelog-2.1.0.tgz#2f4bc7390e3244e4df293e6ba351e4c740a7c764"
   dependencies:
