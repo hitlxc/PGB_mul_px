@@ -13514,6 +13514,31 @@ function normalizeComponent (
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -13528,37 +13553,73 @@ function normalizeComponent (
                 T: "#857AB9",
                 G: "#F9C238",
                 C: "#7AC583"
-            }
+            },
+            scaleTimes: 1.0,
+            translatePercent: 0
         };
     },
     mounted() {
         this.drawSequnce();
+        this.drawBase();
     },
     methods: {
         drawSequnce() {
             let _this = this;
-            let canvas = document.getElementById("sequnce");
-            let context = canvas.getContext("2d");
+            let sequnce = document.getElementById("sequnce");
+            let sequnceContext = sequnce.getContext("2d");
             for (let i = 0; i < _this.sequnce.length; i++) {
                 let base = _this.sequnce[i];
                 if (base == 'A') {
-                    context.fillStyle = _this.sequnceColor.A;
-                    context.fillText('A', 0, (i + 1) * _this.width);
+                    sequnceContext.fillStyle = _this.sequnceColor.A;
                 }
                 if (base == 'T') {
-                    context.fillStyle = _this.sequnceColor.T;
-                    context.fillText('T', 0, (i + 1) * _this.width);
+                    sequnceContext.fillStyle = _this.sequnceColor.T;
                 }
                 if (base == 'G') {
-                    context.fillStyle = _this.sequnceColor.G;
-                    context.fillText('G', 0, (i + 1) * _this.width);
+                    sequnceContext.fillStyle = _this.sequnceColor.G;
                 }
                 if (base == 'C') {
-                    context.fillStyle = _this.sequnceColor.C;
-                    context.fillText('C', 0, (i + 1) * _this.width);
+                    sequnceContext.fillStyle = _this.sequnceColor.C;
                 }
-                context.fillRect(50, i * _this.width, 100, _this.width);
+                sequnceContext.fillRect(50, i * _this.width, 100, _this.width);
             }
+        },
+        drawBase() {
+            let _this = this;
+            let base = document.getElementById("base");
+            let baseContext = base.getContext("2d");
+            baseContext.clearRect(0, 0, base.width, base.height);
+            if (_this.scaleTimes < 1) return;
+            for (let i = 0; i < _this.sequnce.length; i++) {
+                let base = _this.sequnce[i];
+                if (base == 'A') {
+                    baseContext.fillStyle = _this.sequnceColor.A;
+                    baseContext.fillText('A', 0, (i + 1) * _this.width * _this.scaleTimes);
+                }
+                if (base == 'T') {
+                    baseContext.fillStyle = _this.sequnceColor.T;
+                    baseContext.fillText('T', 0, (i + 1) * _this.width * _this.scaleTimes);
+                }
+                if (base == 'G') {
+                    baseContext.fillStyle = _this.sequnceColor.G;
+                    baseContext.fillText('G', 0, (i + 1) * _this.width * _this.scaleTimes);
+                }
+                if (base == 'C') {
+                    baseContext.fillStyle = _this.sequnceColor.C;
+                    baseContext.fillText('C', 0, (i + 1) * _this.width * _this.scaleTimes);
+                }
+            }
+        },
+        zoom(type, num) {
+            console.log(type, num);
+            if (type == 'in') {
+                this.scaleTimes *= num;
+            }
+            if (type == 'out') {
+                this.scaleTimes /= num;
+            }
+            this.translatePercent = -(1 - this.scaleTimes) / this.scaleTimes * 50;
+            this.drawBase();
         }
     }
 });
@@ -18365,20 +18426,165 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "track-wrap" }, [
-      _c("div", { staticClass: "canvas-wrap" }, [
-        _c("canvas", { attrs: { id: "sequnce", width: "200", height: "3000" } })
+  return _c("div", { staticClass: "track-wrap" }, [
+    _c("div", { staticClass: "tool-bar" }, [
+      _c(
+        "div",
+        { staticClass: "zoom-in" },
+        [
+          _c("i", { staticClass: "el-icon-circle-plus-outline" }, [
+            _vm._v("放大")
+          ]),
+          _vm._v(" "),
+          _c(
+            "el-button-group",
+            [
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("in", 2)
+                    }
+                  }
+                },
+                [_vm._v("x2")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("in", 4)
+                    }
+                  }
+                },
+                [_vm._v("x4")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("in", 8)
+                    }
+                  }
+                },
+                [_vm._v("x8")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("in", 16)
+                    }
+                  }
+                },
+                [_vm._v("x16")]
+              )
+            ],
+            1
+          )
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "zoom-out" },
+        [
+          _c("i", { staticClass: "el-icon-remove-outline" }, [_vm._v("缩小")]),
+          _vm._v(" "),
+          _c(
+            "el-button-group",
+            [
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("out", 2)
+                    }
+                  }
+                },
+                [_vm._v("x2")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("out", 4)
+                    }
+                  }
+                },
+                [_vm._v("x4")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("out", 8)
+                    }
+                  }
+                },
+                [_vm._v("x8")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      _vm.zoom("out", 16)
+                    }
+                  }
+                },
+                [_vm._v("x16")]
+              )
+            ],
+            1
+          )
+        ],
+        1
+      )
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "canvas-wrap" }, [
+      _c("div", { staticClass: "canvas-outer" }, [
+        _c("canvas", { attrs: { id: "base", width: "20", height: "500" } }),
+        _vm._v(" "),
+        _c("canvas", {
+          style: {
+            transform:
+              "scaleY(" +
+              _vm.scaleTimes +
+              ") translateY(" +
+              _vm.translatePercent +
+              "%)"
+          },
+          attrs: { id: "sequnce", width: "200", height: "500" }
+        })
       ])
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 
 if (false) {

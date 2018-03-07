@@ -2,9 +2,13 @@ body {
   min-height: 1300px;
   overflow: scroll;
   padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 14px Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif;
 }
 
 a {
   color: #00B7FF;
+}
+
+*{
+	box-sizing: border-box;
 }
