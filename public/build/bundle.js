@@ -13373,12 +13373,6 @@ module.exports = function (name) {
 //
 //
 //
-//
-//
-//
-//
-//
-//
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
@@ -13539,6 +13533,24 @@ function normalizeComponent (
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -13546,8 +13558,10 @@ function normalizeComponent (
 /* harmony default export */ __webpack_exports__["a"] = ({
     data() {
         return {
-            width: 10,
-            sequnce: __WEBPACK_IMPORTED_MODULE_0__mock_track_json___default.a.sequnce,
+            width: 1,
+            sequnce: __WEBPACK_IMPORTED_MODULE_0__mock_track_json___default.a.sequnce.slice(0, 650),
+            start: 0,
+            end: 650,
             sequnceColor: {
                 A: "#FF0066",
                 T: "#857AB9",
@@ -13559,55 +13573,97 @@ function normalizeComponent (
         };
     },
     mounted() {
+        console.time('渲染');
         this.drawSequnce();
         this.drawBase();
+        var end = new Date().getTime(); // 结束时间
+        console.timeEnd('渲染');
     },
     methods: {
         drawSequnce() {
             let _this = this;
-            let sequnce = document.getElementById("sequnce");
-            let sequnceContext = sequnce.getContext("2d");
-            for (let i = 0; i < _this.sequnce.length; i++) {
-                let base = _this.sequnce[i];
-                if (base == 'A') {
-                    sequnceContext.fillStyle = _this.sequnceColor.A;
-                }
-                if (base == 'T') {
-                    sequnceContext.fillStyle = _this.sequnceColor.T;
-                }
-                if (base == 'G') {
-                    sequnceContext.fillStyle = _this.sequnceColor.G;
-                }
-                if (base == 'C') {
-                    sequnceContext.fillStyle = _this.sequnceColor.C;
-                }
-                sequnceContext.fillRect(50, i * _this.width, 100, _this.width);
+            let sequnceTop = document.getElementById("sequnce-top");
+            let sequnceTopContext = sequnceTop.getContext("2d");
+            sequnceTopContext.clearRect(0, 0, sequnceTop.width, sequnceTop.height);
+
+            let sequnceTopData = this.sequnce.slice(0, sequnceTop.height / this.width);
+            let sequnceMidData = this.sequnce.slice(sequnceTop.height / this.width, sequnceTop.height / this.width + 50 * this.width);
+            let sequnceBottomData = this.sequnce.slice(sequnceTop.height / this.width + 50 * this.width, sequnceTop.height / this.width * 2 + 50 * this.width);
+
+            for (let i = 0; i < sequnceTopData.length; i++) {
+                let base = sequnceTopData[i];
+                sequnceTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                sequnceTopContext.fillRect(50, i * _this.width, 100, _this.width);
+            }
+
+            let sequnceMid = document.getElementById("sequnce-mid");
+            let sequnceMidContext = sequnceMid.getContext("2d");
+            sequnceMidContext.clearRect(0, 0, sequnceMid.width, sequnceMid.height);
+
+            for (let i = 0; i < sequnceMidData.length * 0.4; i++) {
+                let base = sequnceMidData[i];
+                sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                sequnceMidContext.fillRect(50, i * _this.width * 5, 100, _this.width * 5);
+            }
+            for (let i = sequnceMidData.length * 0.4; i < sequnceMidData.length * 0.6; i++) {
+                let base = sequnceMidData[i];
+                sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                sequnceMidContext.fillRect(50, (i - sequnceMidData.length * 0.4) * _this.width * 10 + sequnceMid.height / 3, 100, _this.width * 10);
+            }
+            for (let i = sequnceMidData.length * 0.6; i < sequnceMidData.length; i++) {
+                let base = sequnceMidData[i];
+                sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                sequnceMidContext.fillRect(50, (i - sequnceMidData.length * 0.6) * _this.width * 5 + sequnceMid.height / 3 * 2, 100, _this.width * 5);
+            }
+
+            let sequnceBottom = document.getElementById("sequnce-bottom");
+            let sequnceBottomContext = sequnceBottom.getContext("2d");
+            sequnceBottomContext.clearRect(0, 0, sequnceBottom.width, sequnceBottom.height);
+
+            for (let i = 0; i < sequnceBottomData.length; i++) {
+                let base = sequnceBottomData[i];
+                sequnceBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                sequnceBottomContext.fillRect(50, i * _this.width, 100, _this.width);
             }
         },
         drawBase() {
             let _this = this;
-            let base = document.getElementById("base");
-            let baseContext = base.getContext("2d");
-            baseContext.clearRect(0, 0, base.width, base.height);
-            if (_this.scaleTimes < 1) return;
-            for (let i = 0; i < _this.sequnce.length; i++) {
-                let base = _this.sequnce[i];
-                if (base == 'A') {
-                    baseContext.fillStyle = _this.sequnceColor.A;
-                    baseContext.fillText('A', 0, (i + 1) * _this.width * _this.scaleTimes);
-                }
-                if (base == 'T') {
-                    baseContext.fillStyle = _this.sequnceColor.T;
-                    baseContext.fillText('T', 0, (i + 1) * _this.width * _this.scaleTimes);
-                }
-                if (base == 'G') {
-                    baseContext.fillStyle = _this.sequnceColor.G;
-                    baseContext.fillText('G', 0, (i + 1) * _this.width * _this.scaleTimes);
-                }
-                if (base == 'C') {
-                    baseContext.fillStyle = _this.sequnceColor.C;
-                    baseContext.fillText('C', 0, (i + 1) * _this.width * _this.scaleTimes);
-                }
+            let baseTop = document.getElementById("base-top");
+            let baseTopContext = baseTop.getContext("2d");
+            baseTopContext.clearRect(0, 0, baseTop.width, baseTop.height);
+            //if(_this.scaleTimes<1) return;
+
+            let sequnceTopData = this.sequnce.slice(0, baseTop.height / this.width);
+            let sequnceMidData = this.sequnce.slice(baseTop.height / this.width, baseTop.height / this.width + 50 * this.width);
+            let sequnceBottomData = this.sequnce.slice(baseTop.height / this.width + 50 * this.width, baseTop.height / this.width * 2 + 50 * this.width);
+
+            for (let i = 0; i < sequnceTopData.length; i++) {
+                if (i % 10) continue;
+                let base = sequnceTopData[i];
+                baseTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                baseTopContext.fillText(base + (i + _this.start), 0, (i + 10) * _this.width);
+            }
+
+            let baseMid = document.getElementById("base-mid");
+            let baseMidContext = baseMid.getContext("2d");
+            baseMidContext.clearRect(0, 0, baseMid.width, baseMid.height);
+            //if(_this.scaleTimes<1) return;
+            for (let i = 0; i < sequnceMidData.length; i++) {
+                if (i % 10) continue;
+                let base = sequnceMidData[i];
+                baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                baseMidContext.fillText(base + (i + _this.start + 300), 0, (i + 10) * _this.width * 5);
+            }
+
+            let baseBottom = document.getElementById("base-bottom");
+            let baseBottomContext = baseBottom.getContext("2d");
+            baseBottomContext.clearRect(0, 0, baseBottom.width, baseBottom.height);
+            //if(_this.scaleTimes<1) return;
+            for (let i = 0; i < sequnceBottomData.length; i++) {
+                if (i % 10) continue;
+                let base = sequnceBottomData[i];
+                baseBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                baseBottomContext.fillText(base + (i + _this.start + 350), 0, (i + 10) * _this.width);
             }
         },
         zoom(type, num) {
@@ -13620,6 +13676,29 @@ function normalizeComponent (
             }
             this.translatePercent = -(1 - this.scaleTimes) / this.scaleTimes * 50;
             this.drawBase();
+        },
+        move(type, num) {
+            if (type == 'up') {
+                if (num > this.start) {
+                    this.start = 0;
+                    this.end = this.start + 650;
+                } else {
+                    this.start -= num;
+                    this.end -= num;
+                }
+            }
+            if (type == 'down') {
+                if (this.end + num > __WEBPACK_IMPORTED_MODULE_0__mock_track_json___default.a.sequnce.length) {
+                    this.end = __WEBPACK_IMPORTED_MODULE_0__mock_track_json___default.a.sequnce.length;
+                    this.start = this.end - 650;
+                } else {
+                    this.start += num;
+                    this.end += num;
+                }
+            }
+            this.sequnce = __WEBPACK_IMPORTED_MODULE_0__mock_track_json___default.a.sequnce.slice(this.start, this.end);
+            this.drawBase();
+            this.drawSequnce();
         }
     }
 });
@@ -18326,7 +18405,12 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [_c("div", [_vm._m(0), _vm._v(" "), _c("router-view")], 1)])
+  return _c(
+    "div",
+    { staticClass: "app" },
+    [_vm._m(0), _vm._v(" "), _c("router-view")],
+    1
+  )
 }
 var staticRenderFns = [
   function() {
@@ -18430,11 +18514,9 @@ var render = function() {
     _c("div", { staticClass: "tool-bar" }, [
       _c(
         "div",
-        { staticClass: "zoom-in" },
+        { staticClass: "move" },
         [
-          _c("i", { staticClass: "el-icon-circle-plus-outline" }, [
-            _vm._v("放大")
-          ]),
+          _c("i", { staticClass: "el-icon-remove-outline" }, [_vm._v("移动")]),
           _vm._v(" "),
           _c(
             "el-button-group",
@@ -18442,120 +18524,27 @@ var render = function() {
               _c(
                 "el-button",
                 {
-                  attrs: { type: "primary" },
+                  attrs: { type: "primary", icon: "el-icon-arrow-up" },
                   on: {
                     click: function($event) {
-                      _vm.zoom("in", 2)
+                      _vm.move("up", 400)
                     }
                   }
                 },
-                [_vm._v("x2")]
+                [_vm._v("向上")]
               ),
               _vm._v(" "),
               _c(
                 "el-button",
                 {
-                  attrs: { type: "primary" },
+                  attrs: { type: "primary", icon: "el-icon-arrow-down" },
                   on: {
                     click: function($event) {
-                      _vm.zoom("in", 4)
+                      _vm.move("down", 400)
                     }
                   }
                 },
-                [_vm._v("x4")]
-              ),
-              _vm._v(" "),
-              _c(
-                "el-button",
-                {
-                  attrs: { type: "primary" },
-                  on: {
-                    click: function($event) {
-                      _vm.zoom("in", 8)
-                    }
-                  }
-                },
-                [_vm._v("x8")]
-              ),
-              _vm._v(" "),
-              _c(
-                "el-button",
-                {
-                  attrs: { type: "primary" },
-                  on: {
-                    click: function($event) {
-                      _vm.zoom("in", 16)
-                    }
-                  }
-                },
-                [_vm._v("x16")]
-              )
-            ],
-            1
-          )
-        ],
-        1
-      ),
-      _vm._v(" "),
-      _c(
-        "div",
-        { staticClass: "zoom-out" },
-        [
-          _c("i", { staticClass: "el-icon-remove-outline" }, [_vm._v("缩小")]),
-          _vm._v(" "),
-          _c(
-            "el-button-group",
-            [
-              _c(
-                "el-button",
-                {
-                  attrs: { type: "primary" },
-                  on: {
-                    click: function($event) {
-                      _vm.zoom("out", 2)
-                    }
-                  }
-                },
-                [_vm._v("x2")]
-              ),
-              _vm._v(" "),
-              _c(
-                "el-button",
-                {
-                  attrs: { type: "primary" },
-                  on: {
-                    click: function($event) {
-                      _vm.zoom("out", 4)
-                    }
-                  }
-                },
-                [_vm._v("x4")]
-              ),
-              _vm._v(" "),
-              _c(
-                "el-button",
-                {
-                  attrs: { type: "primary" },
-                  on: {
-                    click: function($event) {
-                      _vm.zoom("out", 8)
-                    }
-                  }
-                },
-                [_vm._v("x8")]
-              ),
-              _vm._v(" "),
-              _c(
-                "el-button",
-                {
-                  attrs: { type: "primary" },
-                  on: {
-                    click: function($event) {
-                      _vm.zoom("out", 16)
-                    }
-                  }
-                },
-                [_vm._v("x16")]
+                [_vm._v("向下")]
               )
             ],
             1
@@ -18565,26 +18554,49 @@ var render = function() {
       )
     ]),
     _vm._v(" "),
-    _c("div", { staticClass: "canvas-wrap" }, [
-      _c("div", { staticClass: "canvas-outer" }, [
-        _c("canvas", { attrs: { id: "base", width: "20", height: "500" } }),
-        _vm._v(" "),
-        _c("canvas", {
-          style: {
-            transform:
-              "scaleY(" +
-              _vm.scaleTimes +
-              ") translateY(" +
-              _vm.translatePercent +
-              "%)"
-          },
-          attrs: { id: "sequnce", width: "200", height: "500" }
-        })
-      ])
-    ])
+    _vm._m(0)
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "canvas-wrap" }, [
+      _c("div", { staticClass: "canvas-outer" }, [
+        _c("div", { staticClass: "canvas-top" }, [
+          _c("canvas", {
+            attrs: { id: "base-top", width: "50", height: "300" }
+          }),
+          _vm._v(" "),
+          _c("canvas", {
+            attrs: { id: "sequnce-top", width: "200", height: "300" }
+          })
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "canvas-mid" }, [
+          _c("canvas", {
+            attrs: { id: "base-mid", width: "50", height: "300" }
+          }),
+          _vm._v(" "),
+          _c("canvas", {
+            attrs: { id: "sequnce-mid", width: "200", height: "300" }
+          })
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "canvas-bottom" }, [
+          _c("canvas", {
+            attrs: { id: "base-bottom", width: "50", height: "300" }
+          }),
+          _vm._v(" "),
+          _c("canvas", {
+            attrs: { id: "sequnce-bottom", width: "200", height: "300" }
+          })
+        ])
+      ])
+    ])
+  }
+]
 render._withStripped = true
 
 if (false) {

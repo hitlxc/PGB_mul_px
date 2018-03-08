@@ -1,12 +1,13 @@
+
+*{margin:0;padding:0;}
+
 body {
-  min-height: 1300px;
-  overflow: scroll;
-  padding: 50px;
-  font: 14px Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif;
+  	overflow-y: scroll;
+  	font: 14px Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif;
 }
 
 a {
-  color: #00B7FF;
+  	color: #00B7FF;
 }
 
 *{
