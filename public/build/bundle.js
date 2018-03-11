@@ -13363,6 +13363,7 @@ module.exports = function (name) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__pagelet_common_navBar_vue__ = __webpack_require__(163);
 //
 //
 //
@@ -13373,12 +13374,17 @@ module.exports = function (name) {
 //
 //
 //
+//
+
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
-  data() {
-    return {};
-  }
+	data() {
+		return {};
+	},
+	components: {
+		navBar: __WEBPACK_IMPORTED_MODULE_0__pagelet_common_navBar_vue__["a" /* default */]
+	}
 });
 
 /***/ }),
@@ -13531,26 +13537,6 @@ function normalizeComponent (
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -13568,8 +13554,9 @@ function normalizeComponent (
                 G: "#F9C238",
                 C: "#7AC583"
             },
-            scaleTimes: 1.0,
-            translatePercent: 0
+            zoomAreaHeight: 600,
+            denseAreaHeight: 100,
+            zoomAreaConfig: [{ height: 120, zoom: 12 }, { height: 120, zoom: 8 }, { height: 120, zoom: 30 }, { height: 120, zoom: 8 }, { height: 120, zoom: 12 }]
         };
     },
     mounted() {
@@ -13586,9 +13573,21 @@ function normalizeComponent (
             let sequnceTopContext = sequnceTop.getContext("2d");
             sequnceTopContext.clearRect(0, 0, sequnceTop.width, sequnceTop.height);
 
+            let sequnceMid = document.getElementById("sequnce-mid");
+            let sequnceMidContext = sequnceMid.getContext("2d");
+
+            let sequnceBottom = document.getElementById("sequnce-bottom");
+            let sequnceBottomContext = sequnceBottom.getContext("2d");
+
+            //放大区碱基数
+            let sequnceMidLenght = 0;
+            for (let i = 0; i < this.zoomAreaConfig.length; i++) {
+                sequnceMidLenght += this.zoomAreaConfig[i].height / this.zoomAreaConfig[i].zoom / this.width;
+            }
+
             let sequnceTopData = this.sequnce.slice(0, sequnceTop.height / this.width);
-            let sequnceMidData = this.sequnce.slice(sequnceTop.height / this.width, sequnceTop.height / this.width + 50 * this.width);
-            let sequnceBottomData = this.sequnce.slice(sequnceTop.height / this.width + 50 * this.width, sequnceTop.height / this.width * 2 + 50 * this.width);
+            let sequnceMidData = this.sequnce.slice(sequnceTop.height / this.width, sequnceTop.height / this.width + sequnceMidLenght);
+            let sequnceBottomData = this.sequnce.slice(sequnceTop.height / this.width + sequnceMidLenght, sequnceTop.height / this.width + sequnceMidLenght + sequnceBottom.height / this.width);
 
             for (let i = 0; i < sequnceTopData.length; i++) {
                 let base = sequnceTopData[i];
@@ -13596,28 +13595,25 @@ function normalizeComponent (
                 sequnceTopContext.fillRect(50, i * _this.width, 100, _this.width);
             }
 
-            let sequnceMid = document.getElementById("sequnce-mid");
-            let sequnceMidContext = sequnceMid.getContext("2d");
             sequnceMidContext.clearRect(0, 0, sequnceMid.width, sequnceMid.height);
 
-            for (let i = 0; i < sequnceMidData.length * 0.4; i++) {
-                let base = sequnceMidData[i];
-                sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                sequnceMidContext.fillRect(50, i * _this.width * 5, 100, _this.width * 5);
-            }
-            for (let i = sequnceMidData.length * 0.4; i < sequnceMidData.length * 0.6; i++) {
-                let base = sequnceMidData[i];
-                sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                sequnceMidContext.fillRect(50, (i - sequnceMidData.length * 0.4) * _this.width * 10 + sequnceMid.height / 3, 100, _this.width * 10);
-            }
-            for (let i = sequnceMidData.length * 0.6; i < sequnceMidData.length; i++) {
-                let base = sequnceMidData[i];
-                sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                sequnceMidContext.fillRect(50, (i - sequnceMidData.length * 0.6) * _this.width * 5 + sequnceMid.height / 3 * 2, 100, _this.width * 5);
+            let paintedBase = 0;
+            let paintedHeight = 0;
+            let baseMidIndex = 0;
+
+            for (let i = 0; i < this.zoomAreaConfig.length; i++) {
+                let height = this.zoomAreaConfig[i].height;
+                let zoom = this.zoomAreaConfig[i].zoom;
+
+                for (let i = 0; i < height / zoom / this.width; i++) {
+                    let base = sequnceMidData[baseMidIndex++];
+                    sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                    sequnceMidContext.fillRect(50, i * _this.width * zoom + paintedHeight, 100, _this.width * zoom);
+                }
+                paintedBase += height / zoom / this.width;
+                paintedHeight += height;
             }
 
-            let sequnceBottom = document.getElementById("sequnce-bottom");
-            let sequnceBottomContext = sequnceBottom.getContext("2d");
             sequnceBottomContext.clearRect(0, 0, sequnceBottom.width, sequnceBottom.height);
 
             for (let i = 0; i < sequnceBottomData.length; i++) {
@@ -13630,12 +13626,24 @@ function normalizeComponent (
             let _this = this;
             let baseTop = document.getElementById("base-top");
             let baseTopContext = baseTop.getContext("2d");
+
+            let baseMid = document.getElementById("base-mid");
+            let baseMidContext = baseMid.getContext("2d");
+
+            let baseBottom = document.getElementById("base-bottom");
+            let baseBottomContext = baseBottom.getContext("2d");
+
             baseTopContext.clearRect(0, 0, baseTop.width, baseTop.height);
-            //if(_this.scaleTimes<1) return;
+
+            //放大区碱基数
+            let sequnceMidLenght = 0;
+            for (let i = 0; i < this.zoomAreaConfig.length; i++) {
+                sequnceMidLenght += this.zoomAreaConfig[i].height / this.zoomAreaConfig[i].zoom / this.width;
+            }
 
             let sequnceTopData = this.sequnce.slice(0, baseTop.height / this.width);
-            let sequnceMidData = this.sequnce.slice(baseTop.height / this.width, baseTop.height / this.width + 50 * this.width);
-            let sequnceBottomData = this.sequnce.slice(baseTop.height / this.width + 50 * this.width, baseTop.height / this.width * 2 + 50 * this.width);
+            let sequnceMidData = this.sequnce.slice(baseTop.height / this.width, baseTop.height / this.width + sequnceMidLenght);
+            let sequnceBottomData = this.sequnce.slice(baseTop.height / this.width + sequnceMidLenght, baseTop.height / this.width + sequnceMidLenght + baseBottom.height / this.width);
 
             for (let i = 0; i < sequnceTopData.length; i++) {
                 if (i % 10) continue;
@@ -13644,26 +13652,35 @@ function normalizeComponent (
                 baseTopContext.fillText(base + (i + _this.start), 0, (i + 10) * _this.width);
             }
 
-            let baseMid = document.getElementById("base-mid");
-            let baseMidContext = baseMid.getContext("2d");
             baseMidContext.clearRect(0, 0, baseMid.width, baseMid.height);
-            //if(_this.scaleTimes<1) return;
-            for (let i = 0; i < sequnceMidData.length; i++) {
-                if (i % 10) continue;
-                let base = sequnceMidData[i];
-                baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                baseMidContext.fillText(base + (i + _this.start + 300), 0, (i + 10) * _this.width * 5);
+
+            let paintedBase = baseTop.height / this.width;
+            let paintedHeight = 0;
+            let baseMidIndex = 0;
+
+            for (let i = 0; i < this.zoomAreaConfig.length; i++) {
+                let height = this.zoomAreaConfig[i].height;
+                let zoom = this.zoomAreaConfig[i].zoom;
+
+                for (let i = 0; i < height / zoom / this.width; i++) {
+                    let base = sequnceMidData[baseMidIndex++];
+                    if ((i + _this.start + paintedBase) % ~~(20 / zoom)) {
+                        continue;
+                    }
+                    baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                    baseMidContext.fillText(base + (i + _this.start + paintedBase), 0, i * _this.width * zoom + 10 + paintedHeight);
+                }
+                paintedBase += ~~(height / zoom) / this.width;
+                paintedHeight += height;
             }
 
-            let baseBottom = document.getElementById("base-bottom");
-            let baseBottomContext = baseBottom.getContext("2d");
             baseBottomContext.clearRect(0, 0, baseBottom.width, baseBottom.height);
-            //if(_this.scaleTimes<1) return;
+
             for (let i = 0; i < sequnceBottomData.length; i++) {
-                if (i % 10) continue;
+                if ((i + _this.start + paintedBase) % 10) continue;
                 let base = sequnceBottomData[i];
                 baseBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                baseBottomContext.fillText(base + (i + _this.start + 350), 0, (i + 10) * _this.width);
+                baseBottomContext.fillText(base + (i + _this.start + paintedBase), 0, (i + 10) * _this.width);
             }
         },
         zoom(type, num) {
@@ -13699,6 +13716,26 @@ function normalizeComponent (
             this.sequnce = __WEBPACK_IMPORTED_MODULE_0__mock_track_json___default.a.sequnce.slice(this.start, this.end);
             this.drawBase();
             this.drawSequnce();
+        },
+        setZoomAreaConfig(data) {
+            if (Object.prototype.toString.call(data) !== '[object Array]') {
+                console.error('setZoomAreaConfig:参数必须为数组');
+                return;
+            }
+            data.forEach(function (zoomArea) {
+                if (!zoomArea.hasOwnProperty('height') || !zoomArea.hasOwnProperty('zoom')) {
+                    console.error('setZoomAreaConfig:需要为每一个放大区域指定height和zoom');
+                    return;
+                }
+                if (zoomArea.height % zoomArea.zoom) {
+                    console.error('setZoomAreaConfig:同一放大区域的height必须是zoom的倍数');
+                    return;
+                }
+                if (zoomArea.height <= zoomArea.zoom) {
+                    console.error('setZoomAreaConfig:同一放大区域的height必须大于等于zoom');
+                    return;
+                }
+            });
         }
     }
 });
@@ -15413,30 +15450,14 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vue_
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_5_element_ui___default.a);
 
 const router = new __WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]({
-  routes: [{ path: '/', redirect: '/track' }, { path: '/track', component: __WEBPACK_IMPORTED_MODULE_3__pagelet_track_vue__["a" /* default */] }]
+    routes: [{ path: '/', redirect: '/track' }, { path: '/track', component: __WEBPACK_IMPORTED_MODULE_3__pagelet_track_vue__["a" /* default */] }]
 });
-
-//const router = new VueRouter();
-/*
-router.map({
-  '/hello': {
-    component: hello,
-  },
-});
-
-
-router.redirect({
-  '*': '/list',
-});
-
-router.start(App, '#app');
-*/
 
 new __WEBPACK_IMPORTED_MODULE_0_vue___default.a({
-  el: '#app',
-  router,
-  template: '<App/>',
-  components: { App: __WEBPACK_IMPORTED_MODULE_2__App_vue__["a" /* default */] }
+    el: '#app',
+    router,
+    template: '<App/>',
+    components: { App: __WEBPACK_IMPORTED_MODULE_2__App_vue__["a" /* default */] }
 });
 
 /***/ }),
@@ -18408,7 +18429,7 @@ var render = function() {
   return _c(
     "div",
     { staticClass: "app" },
-    [_vm._m(0), _vm._v(" "), _c("router-view")],
+    [_vm._m(0), _vm._v(" "), _c("navBar"), _vm._v(" "), _c("router-view")],
     1
   )
 }
@@ -18554,49 +18575,83 @@ var render = function() {
       )
     ]),
     _vm._v(" "),
-    _vm._m(0)
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "canvas-wrap" }, [
+    _c("div", { staticClass: "canvas-wrap" }, [
       _c("div", { staticClass: "canvas-outer" }, [
-        _c("div", { staticClass: "canvas-top" }, [
-          _c("canvas", {
-            attrs: { id: "base-top", width: "50", height: "300" }
-          }),
-          _vm._v(" "),
-          _c("canvas", {
-            attrs: { id: "sequnce-top", width: "200", height: "300" }
-          })
-        ]),
+        _c(
+          "div",
+          {
+            staticClass: "canvas-top",
+            style: { height: _vm.denseAreaHeight + "px" }
+          },
+          [
+            _c("canvas", {
+              attrs: {
+                id: "base-top",
+                width: "50",
+                height: _vm.denseAreaHeight
+              }
+            }),
+            _vm._v(" "),
+            _c("canvas", {
+              attrs: {
+                id: "sequnce-top",
+                width: "200",
+                height: _vm.denseAreaHeight
+              }
+            })
+          ]
+        ),
         _vm._v(" "),
-        _c("div", { staticClass: "canvas-mid" }, [
-          _c("canvas", {
-            attrs: { id: "base-mid", width: "50", height: "300" }
-          }),
-          _vm._v(" "),
-          _c("canvas", {
-            attrs: { id: "sequnce-mid", width: "200", height: "300" }
-          })
-        ]),
+        _c(
+          "div",
+          {
+            staticClass: "canvas-mid",
+            style: { height: _vm.zoomAreaHeight + "px" }
+          },
+          [
+            _c("canvas", {
+              attrs: { id: "base-mid", width: "50", height: _vm.zoomAreaHeight }
+            }),
+            _vm._v(" "),
+            _c("canvas", {
+              attrs: {
+                id: "sequnce-mid",
+                width: "200",
+                height: _vm.zoomAreaHeight
+              }
+            })
+          ]
+        ),
         _vm._v(" "),
-        _c("div", { staticClass: "canvas-bottom" }, [
-          _c("canvas", {
-            attrs: { id: "base-bottom", width: "50", height: "300" }
-          }),
-          _vm._v(" "),
-          _c("canvas", {
-            attrs: { id: "sequnce-bottom", width: "200", height: "300" }
-          })
-        ])
+        _c(
+          "div",
+          {
+            staticClass: "canvas-bottom",
+            style: { height: _vm.denseAreaHeight + "px" }
+          },
+          [
+            _c("canvas", {
+              attrs: {
+                id: "base-bottom",
+                width: "50",
+                height: _vm.denseAreaHeight
+              }
+            }),
+            _vm._v(" "),
+            _c("canvas", {
+              attrs: {
+                id: "sequnce-bottom",
+                width: "200",
+                height: _vm.denseAreaHeight
+              }
+            })
+          ]
+        )
       ])
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 
 if (false) {
@@ -59760,6 +59815,163 @@ exports.__esModule = true;
 exports.isDef = isDef;
 function isDef(val) {
   return val !== undefined && val !== null;
+}
+
+/***/ }),
+/* 162 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+	data() {
+		return {
+			activeIndex: '1'
+		};
+	},
+	methods: {}
+});
+
+/***/ }),
+/* 163 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_navBar_vue__ = __webpack_require__(162);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_2fafb268_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_navBar_vue__ = __webpack_require__(165);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__ = __webpack_require__(46);
+var disposed = false
+function injectStyle (context) {
+  if (disposed) return
+  __webpack_require__(164)
+}
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-2fafb268"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+
+var Component = Object(__WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__["a" /* default */])(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_navBar_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_2fafb268_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_navBar_vue__["a" /* render */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_2fafb268_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_navBar_vue__["b" /* staticRenderFns */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "src/pagelet/common/navBar.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-2fafb268", Component.options)
+  } else {
+    hotAPI.reload("data-v-2fafb268", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 164 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 165 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "el-menu",
+    {
+      staticClass: "el-menu-demo",
+      attrs: {
+        "default-active": _vm.activeIndex,
+        mode: "horizontal",
+        "background-color": "#545c64",
+        "text-color": "#fff",
+        "active-text-color": "#ffd04b"
+      }
+    },
+    [
+      _c(
+        "el-menu-item",
+        { attrs: { index: "1" } },
+        [
+          _c("router-link", { attrs: { to: "/track" } }, [
+            _vm._v("基因组浏览器")
+          ])
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "el-menu-item",
+        { attrs: { index: "2" } },
+        [_c("router-link", { attrs: { to: "/track" } }, [_vm._v("基因关联")])],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "el-menu-item",
+        { attrs: { index: "3" } },
+        [_c("router-link", { attrs: { to: "/track" } }, [_vm._v("设置")])],
+        1
+      )
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-2fafb268", { render: render, staticRenderFns: staticRenderFns })
+  }
 }
 
 /***/ })

@@ -2,25 +2,6 @@
 
     <div class="track-wrap">
         <div class="tool-bar">
-            <!-- <div class="zoom-in">
-                <i class="el-icon-circle-plus-outline">放大</i>
-                <el-button-group>
-                    <el-button type="primary" @click="zoom('in',2)">x2</el-button>
-                    <el-button type="primary" @click="zoom('in',4)">x4</el-button>
-                    <el-button type="primary" @click="zoom('in',8)">x8</el-button>
-                    <el-button type="primary" @click="zoom('in',16)">x16</el-button>
-                </el-button-group>
-            </div>
-            
-            <div class="zoom-out">
-                <i class="el-icon-remove-outline">缩小</i>
-                <el-button-group>
-                    <el-button type="primary" @click="zoom('out',2)">x2</el-button>
-                    <el-button type="primary" @click="zoom('out',4)">x4</el-button>
-                    <el-button type="primary" @click="zoom('out',8)">x8</el-button>
-                    <el-button type="primary" @click="zoom('out',16)">x16</el-button>
-                </el-button-group>
-            </div> -->
 
             <div class="move">
                 <i class="el-icon-remove-outline">移动</i>
@@ -31,20 +12,19 @@
             </div>
         </div>
         
-        
         <div class="canvas-wrap">
             <div class="canvas-outer">
-                <div class="canvas-top">
-                    <canvas id="base-top" width="50" height="300" ></canvas>
-                    <canvas id="sequnce-top" width="200" height="300" ></canvas>
+                <div class="canvas-top" :style="{ height: denseAreaHeight + 'px' }">
+                    <canvas id="base-top" width="50" :height="denseAreaHeight" ></canvas>
+                    <canvas id="sequnce-top" width="200" :height="denseAreaHeight" ></canvas>
                 </div>
-                <div class="canvas-mid">
-                    <canvas id="base-mid" width="50" height="300" ></canvas>
-                    <canvas id="sequnce-mid" width="200" height="300" ></canvas>
+                <div class="canvas-mid" :style="{ height: zoomAreaHeight + 'px' }">
+                    <canvas id="base-mid" width="50" :height="zoomAreaHeight" ></canvas>
+                    <canvas id="sequnce-mid" width="200" :height="zoomAreaHeight" ></canvas>
                 </div>
-                <div class="canvas-bottom">
-                    <canvas id="base-bottom" width="50" height="300" ></canvas>
-                    <canvas id="sequnce-bottom" width="200" height="300" ></canvas>
+                <div class="canvas-bottom" :style="{ height: denseAreaHeight + 'px' }">
+                    <canvas id="base-bottom" width="50" :height="denseAreaHeight" ></canvas>
+                    <canvas id="sequnce-bottom" width="200" :height="denseAreaHeight" ></canvas>
                 </div>
             </div>
         </div>
@@ -69,8 +49,15 @@
                     G:"#F9C238",
                     C:"#7AC583"
                 },
-                scaleTimes:1.0,
-                translatePercent:0,
+                zoomAreaHeight:600,
+                denseAreaHeight:100,
+                zoomAreaConfig:[
+                    {height:120,zoom:12},
+                    {height:120,zoom:8},
+                    {height:120,zoom:30},
+                    {height:120,zoom:8},
+                    {height:120,zoom:12}
+                ]
             }
         },
         mounted(){
@@ -78,7 +65,7 @@
             this.drawSequnce();
             this.drawBase();
             var end = new Date().getTime(); // 结束时间
-            console.timeEnd('渲染')
+            console.timeEnd('渲染');
         },
         methods: {
             drawSequnce(){
@@ -86,39 +73,50 @@
                 let sequnceTop = document.getElementById("sequnce-top");
                 let sequnceTopContext = sequnceTop.getContext("2d");
                 sequnceTopContext.clearRect(0, 0, sequnceTop.width, sequnceTop.height);
+                
+                let sequnceMid = document.getElementById("sequnce-mid");
+                let sequnceMidContext = sequnceMid.getContext("2d");
 
-                let sequnceTopData = this.sequnce.slice(0,sequnceTop.height/this.width);
-                let sequnceMidData = this.sequnce.slice(sequnceTop.height/this.width,sequnceTop.height/this.width+50*this.width);
-                let sequnceBottomData = this.sequnce.slice(sequnceTop.height/this.width+50*this.width,sequnceTop.height/this.width*2+50*this.width);
+                let sequnceBottom = document.getElementById("sequnce-bottom");
+                let sequnceBottomContext = sequnceBottom.getContext("2d");
+
+                
+
+                //放大区碱基数
+                let sequnceMidLenght = 0;
+                for(let i = 0; i < this.zoomAreaConfig.length;i++){
+                    sequnceMidLenght += this.zoomAreaConfig[i].height/this.zoomAreaConfig[i].zoom/this.width;
+                }
+
+                let sequnceTopData = this.sequnce.slice(0, sequnceTop.height/this.width);
+                let sequnceMidData = this.sequnce.slice(sequnceTop.height/this.width, sequnceTop.height/this.width+sequnceMidLenght);
+                let sequnceBottomData = this.sequnce.slice(sequnceTop.height/this.width+sequnceMidLenght, sequnceTop.height/this.width+sequnceMidLenght+sequnceBottom.height/this.width);
 
                 for (let i = 0; i<sequnceTopData.length; i++){
                     let base = sequnceTopData[i];
                     sequnceTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
                     sequnceTopContext.fillRect(50, i*_this.width, 100, _this.width);
                 }
-
-                let sequnceMid = document.getElementById("sequnce-mid");
-                let sequnceMidContext = sequnceMid.getContext("2d");
+                
                 sequnceMidContext.clearRect(0, 0, sequnceMid.width, sequnceMid.height);
 
-                for (let i = 0;i<sequnceMidData.length*0.4;i++){
-                    let base = sequnceMidData[i];
-                    sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    sequnceMidContext.fillRect(50, i*_this.width*5, 100, _this.width*5);
-                }
-                for (let i = sequnceMidData.length*0.4;i<sequnceMidData.length*0.6;i++){
-                    let base = sequnceMidData[i];
-                    sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    sequnceMidContext.fillRect(50, (i-sequnceMidData.length*0.4)*_this.width*10 + sequnceMid.height/3, 100, _this.width*10);
-                }
-                for (let i = sequnceMidData.length*0.6;i<sequnceMidData.length;i++){
-                    let base = sequnceMidData[i];
-                    sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    sequnceMidContext.fillRect(50, (i-sequnceMidData.length*0.6)*_this.width*5+ sequnceMid.height/3*2, 100, _this.width*5);
+                let paintedBase = 0;
+                let paintedHeight = 0;
+                let baseMidIndex = 0;
+
+                for(let i = 0; i < this.zoomAreaConfig.length; i++){
+                    let height = this.zoomAreaConfig[i].height;
+                    let zoom = this.zoomAreaConfig[i].zoom;
+
+                    for (let i = 0; i < height/zoom/this.width; i++){
+                        let base = sequnceMidData[baseMidIndex++];
+                        sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                        sequnceMidContext.fillRect(50, i*_this.width*zoom + paintedHeight, 100, _this.width*zoom);
+                    }
+                    paintedBase += height/zoom/this.width;
+                    paintedHeight += height;
                 }
 
-                let sequnceBottom = document.getElementById("sequnce-bottom");
-                let sequnceBottomContext = sequnceBottom.getContext("2d");
                 sequnceBottomContext.clearRect(0, 0, sequnceBottom.width, sequnceBottom.height);
 
                 for (let i = 0; i<sequnceBottomData.length; i++){
@@ -132,12 +130,25 @@
                 let _this = this;
                 let baseTop = document.getElementById("base-top");
                 let baseTopContext = baseTop.getContext("2d");
-                baseTopContext.clearRect(0, 0, baseTop.width, baseTop.height);
-                //if(_this.scaleTimes<1) return;
 
-                let sequnceTopData = this.sequnce.slice(0,baseTop.height/this.width);
-                let sequnceMidData = this.sequnce.slice(baseTop.height/this.width,baseTop.height/this.width+50*this.width);
-                let sequnceBottomData = this.sequnce.slice(baseTop.height/this.width+50*this.width,baseTop.height/this.width*2+50*this.width);
+                let baseMid = document.getElementById("base-mid");
+                let baseMidContext = baseMid.getContext("2d");
+
+                let baseBottom = document.getElementById("base-bottom");
+                let baseBottomContext = baseBottom.getContext("2d");
+
+                baseTopContext.clearRect(0, 0, baseTop.width, baseTop.height);
+
+                //放大区碱基数
+                let sequnceMidLenght = 0;
+                for(let i = 0; i < this.zoomAreaConfig.length;i++){
+                    sequnceMidLenght += this.zoomAreaConfig[i].height/this.zoomAreaConfig[i].zoom/this.width;
+                }
+
+                let sequnceTopData = this.sequnce.slice(0, baseTop.height/this.width);
+                let sequnceMidData = this.sequnce.slice(baseTop.height/this.width, baseTop.height/this.width+sequnceMidLenght);
+                let sequnceBottomData = this.sequnce.slice(baseTop.height/this.width+sequnceMidLenght, baseTop.height/this.width+sequnceMidLenght+baseBottom.height/this.width);
+
 
                 for (let i = 0;i<sequnceTopData.length;i++){
                     if(i%10) continue;
@@ -145,27 +156,34 @@
                     baseTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
                     baseTopContext.fillText(base+(i+_this.start), 0, (i+10)*_this.width);
                 }
-
-                let baseMid = document.getElementById("base-mid");
-                let baseMidContext = baseMid.getContext("2d");
+                
                 baseMidContext.clearRect(0, 0, baseMid.width, baseMid.height);
-                //if(_this.scaleTimes<1) return;
-                for (let i = 0;i<sequnceMidData.length;i++){
-                    if(i%10) continue;
-                    let base = sequnceMidData[i];
-                    baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    baseMidContext.fillText(base+(i+_this.start+300), 0, (i+10)*_this.width*5);
-                }
 
-                let baseBottom = document.getElementById("base-bottom");
-                let baseBottomContext = baseBottom.getContext("2d");
+                let paintedBase = baseTop.height/this.width;
+                let paintedHeight = 0;
+                let baseMidIndex = 0;
+
+                for(let i = 0; i < this.zoomAreaConfig.length; i++){
+                    let height = this.zoomAreaConfig[i].height;
+                    let zoom = this.zoomAreaConfig[i].zoom;
+
+                    for (let i = 0; i < height/zoom/this.width; i++){
+                        let base = sequnceMidData[baseMidIndex++];
+                        if((i+_this.start+paintedBase)%~~(20/zoom) ){continue}
+                        baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                        baseMidContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.width*zoom+10+paintedHeight);
+                    }
+                    paintedBase += ~~(height/zoom)/this.width;
+                    paintedHeight += height;
+                }
+                
                 baseBottomContext.clearRect(0, 0, baseBottom.width, baseBottom.height);
-                //if(_this.scaleTimes<1) return;
+
                 for (let i = 0;i<sequnceBottomData.length;i++){
-                    if(i%10) continue;
+                    if((i+_this.start+paintedBase)%10) continue;
                     let base = sequnceBottomData[i];
                     baseBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    baseBottomContext.fillText(base+(i+_this.start+350), 0, (i+10)*_this.width);
+                    baseBottomContext.fillText(base+(i+_this.start+paintedBase), 0, (i+10)*_this.width);
                 }
             },
             zoom(type, num){
@@ -201,6 +219,27 @@
                 this.sequnce = track.sequnce.slice(this.start,this.end);
                 this.drawBase();
                 this.drawSequnce();
+            },
+            setZoomAreaConfig(data){
+                if(Object.prototype.toString.call(data) !== '[object Array]'){
+                    console.error('setZoomAreaConfig:参数必须为数组')
+                    return;
+                }
+                data.forEach(function(zoomArea){
+                    if(!zoomArea.hasOwnProperty('height') || !zoomArea.hasOwnProperty('zoom')){
+                        console.error('setZoomAreaConfig:需要为每一个放大区域指定height和zoom');
+                        return;
+                    }
+                    if(zoomArea.height % zoomArea.zoom ){
+                        console.error('setZoomAreaConfig:同一放大区域的height必须是zoom的倍数');
+                        return;
+                    }
+                    if(zoomArea.height <= zoomArea.zoom ){
+                        console.error('setZoomAreaConfig:同一放大区域的height必须大于等于zoom');
+                        return;
+                    }
+                })
+                
             }
         }
     }

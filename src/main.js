@@ -11,36 +11,16 @@ Vue.use(Element);
 
 
 const router = new VueRouter({
-  routes: [
-    { path: '/', redirect: '/track' },
-    { path: '/track', component: Track }
+    routes: [
+        { path: '/', redirect: '/track' },
+        { path: '/track', component: Track }
 
-  ]
+    ]
 })
 
-
-//const router = new VueRouter();
-/*
-router.map({
-  '/hello': {
-    component: hello,
-  },
-});
-
-
-router.redirect({
-  '*': '/list',
-});
-
-router.start(App, '#app');
-*/
-
-
-
-
 new Vue({
-  el: '#app',
-  router,
-  template: '<App/>',
-  components: { App }
+    el: '#app', 
+    router,
+    template: '<App/>',
+    components: { App }
 })
