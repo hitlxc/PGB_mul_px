@@ -1,0 +1,28 @@
+{
+    "denseAreaHeight": 100,
+    "denseAreaZoom": 1,
+    "zoomAreaHeight": 600,
+    "step": 400,
+    "zoomAreaConfig": [
+        {
+            "height": 120,
+            "zoom": 12
+        },
+        {
+            "height": 120,
+            "zoom": 8
+        },
+        {
+            "height": 120,
+            "zoom": 30
+        },
+        {
+            "height": 120,
+            "zoom": 8
+        },
+        {
+            "height": 120,
+            "zoom": 12
+        }
+    ]
+}
