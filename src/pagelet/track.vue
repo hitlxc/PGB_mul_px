@@ -17,14 +17,17 @@
                 <div class="canvas-top" :style="{ height: denseAreaHeight + 'px' }">
                     <canvas id="base-top" width="50" :height="denseAreaHeight" ></canvas>
                     <canvas id="sequnce-top" width="200" :height="denseAreaHeight" ></canvas>
+                    <canvas id="variants-top" width="200" :height="denseAreaHeight" ></canvas>
                 </div>
                 <div class="canvas-mid" :style="{ height: zoomAreaHeight + 'px' }">
                     <canvas id="base-mid" width="50" :height="zoomAreaHeight" ></canvas>
                     <canvas id="sequnce-mid" width="200" :height="zoomAreaHeight" ></canvas>
+                    <canvas id="variants-mid" width="200" :height="zoomAreaHeight" ></canvas>
                 </div>
                 <div class="canvas-bottom" :style="{ height: denseAreaHeight + 'px' }">
                     <canvas id="base-bottom" width="50" :height="denseAreaHeight" ></canvas>
                     <canvas id="sequnce-bottom" width="200" :height="denseAreaHeight" ></canvas>
+                    <canvas id="variants-bottom" width="200" :height="denseAreaHeight" ></canvas>
                 </div>
             </div>
         </div>
@@ -34,15 +37,16 @@
 
 <script>
 
+    import axios from 'axios';
     import track from '../../mock/track.json'
 
     export default {
         data() {
             return {
-                width:1,
+                denseAreaZoom:1,
                 sequnce:track.sequnce.slice(0,650),
+                variants:track.variants,
                 start:0,
-                end:650,
                 sequnceColor:{
                     A:"#FF0066",
                     T:"#857AB9",
@@ -60,14 +64,37 @@
                 ]
             }
         },
-        mounted(){
-            console.time('渲染')
-            this.drawSequnce();
-            this.drawBase();
-            var end = new Date().getTime(); // 结束时间
+        async mounted(){
+            console.time('渲染');
+
+            let _this = this;
+            await axios.get('/api/setting/get',)
+            .then(function (response) {
+                _this.zoomAreaHeight = response.data.zoomAreaHeight || 600;
+                _this.denseAreaHeight = response.data.denseAreaHeight || 100;
+                _this.denseAreaZoom = response.data.denseAreaZoom || 1;
+                _this.zoomAreaConfig = response.data.zoomAreaConfig || [
+                    {height:120,zoom:12},
+                    {height:120,zoom:8},
+                    {height:120,zoom:30},
+                    {height:120,zoom:8},
+                    {height:120,zoom:12}
+                ];
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+
+            this.drawAll();
+            let end = new Date().getTime(); // 结束时间
             console.timeEnd('渲染');
         },
         methods: {
+            drawAll(){
+                this.drawBase();
+                this.drawSequnce();
+                this.drawVariants();
+            },
             drawSequnce(){
                 let _this = this;
                 let sequnceTop = document.getElementById("sequnce-top");
@@ -80,22 +107,20 @@
                 let sequnceBottom = document.getElementById("sequnce-bottom");
                 let sequnceBottomContext = sequnceBottom.getContext("2d");
 
-                
-
                 //放大区碱基数
                 let sequnceMidLenght = 0;
                 for(let i = 0; i < this.zoomAreaConfig.length;i++){
-                    sequnceMidLenght += this.zoomAreaConfig[i].height/this.zoomAreaConfig[i].zoom/this.width;
+                    sequnceMidLenght += this.zoomAreaConfig[i].height/this.zoomAreaConfig[i].zoom/this.denseAreaZoom;
                 }
 
-                let sequnceTopData = this.sequnce.slice(0, sequnceTop.height/this.width);
-                let sequnceMidData = this.sequnce.slice(sequnceTop.height/this.width, sequnceTop.height/this.width+sequnceMidLenght);
-                let sequnceBottomData = this.sequnce.slice(sequnceTop.height/this.width+sequnceMidLenght, sequnceTop.height/this.width+sequnceMidLenght+sequnceBottom.height/this.width);
+                let sequnceTopData = this.sequnce.slice(0, sequnceTop.height/this.denseAreaZoom);
+                let sequnceMidData = this.sequnce.slice(sequnceTop.height/this.denseAreaZoom, sequnceTop.height/this.denseAreaZoom+sequnceMidLenght);
+                let sequnceBottomData = this.sequnce.slice(sequnceTop.height/this.denseAreaZoom+sequnceMidLenght, sequnceTop.height/this.denseAreaZoom+sequnceMidLenght+sequnceBottom.height/this.denseAreaZoom);
 
                 for (let i = 0; i<sequnceTopData.length; i++){
                     let base = sequnceTopData[i];
                     sequnceTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    sequnceTopContext.fillRect(50, i*_this.width, 100, _this.width);
+                    sequnceTopContext.fillRect(50, i*_this.denseAreaZoom, 100, _this.denseAreaZoom);
                 }
                 
                 sequnceMidContext.clearRect(0, 0, sequnceMid.width, sequnceMid.height);
@@ -108,12 +133,12 @@
                     let height = this.zoomAreaConfig[i].height;
                     let zoom = this.zoomAreaConfig[i].zoom;
 
-                    for (let i = 0; i < height/zoom/this.width; i++){
+                    for (let i = 0; i < height/zoom/this.denseAreaZoom; i++){
                         let base = sequnceMidData[baseMidIndex++];
                         sequnceMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                        sequnceMidContext.fillRect(50, i*_this.width*zoom + paintedHeight, 100, _this.width*zoom);
+                        sequnceMidContext.fillRect(50, i*_this.denseAreaZoom*zoom + paintedHeight, 100, _this.denseAreaZoom*zoom);
                     }
-                    paintedBase += height/zoom/this.width;
+                    paintedBase += height/zoom/this.denseAreaZoom;
                     paintedHeight += height;
                 }
 
@@ -122,7 +147,56 @@
                 for (let i = 0; i<sequnceBottomData.length; i++){
                     let base = sequnceBottomData[i];
                     sequnceBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    sequnceBottomContext.fillRect(50, i*_this.width, 100, _this.width);
+                    sequnceBottomContext.fillRect(50, i*_this.denseAreaZoom, 100, _this.denseAreaZoom);
+                }
+
+            },
+            drawVariants(){
+                let _this = this;
+                let variantsTop = document.getElementById("variants-top");
+                let variantsTopContext = variantsTop.getContext("2d");
+                variantsTopContext.clearRect(0, 0, variantsTop.width, variantsTop.height);
+
+                let variantsMid = document.getElementById("variants-mid");
+                let variantsMidContext = variantsMid.getContext("2d");
+                variantsMidContext.clearRect(0, 0, variantsMid.width, variantsMid.height);
+
+                let variantsBottom = document.getElementById("variants-bottom");
+                let variantsBottomContext = variantsBottom.getContext("2d");
+                variantsBottomContext.clearRect(0, 0, variantsBottom.width, variantsBottom.height);
+
+                for(let i = 0;i<this.variants.length;i++){
+                    let variant = this.variants[i];
+                    let id = variant.id, site = variant.site, base = variant.base;
+                    if(site < this.midAreaStar && site > this.start){
+                        variantsTopContext.fillText(base+(site), 0, (site-this.start)*_this.denseAreaZoom+10);
+                    }
+                    if(site >= this.midAreaStar && site < this.midAreaEnd){
+                        let paintedBase = 0, paintedHeight = 0;
+                        let siteInZoomCanvas = site - this.midAreaStar;
+                        for(let i = 0; i < this.zoomAreaConfig.length; i++){
+                            let height = this.zoomAreaConfig[i].height;
+                            let zoom = this.zoomAreaConfig[i].zoom;
+                            console.log(siteInZoomCanvas,paintedBase,paintedBase + height/zoom/this.denseAreaZoom)
+
+                            if(siteInZoomCanvas >= paintedBase && siteInZoomCanvas <= paintedBase + height/zoom/this.denseAreaZoom){
+                                
+                                variantsMidContext.fillText(base+(site), 0, (siteInZoomCanvas-paintedBase)*_this.denseAreaZoom*zoom+paintedHeight+10);
+                                break;
+                            }
+                            paintedBase += height/zoom/this.denseAreaZoom;
+                            paintedHeight += height;
+
+                        }
+
+                        variantsTopContext.fillText(base+(site), 0, (site-this.start)*_this.denseAreaZoom+10);
+                    }
+                    if(site < this.end && site >= this.midAreaEnd){
+                        console.log('bottom');
+                        console.log(site)
+                        console.log((site-this.midAreaEnd)*_this.denseAreaZoom+10)
+                        variantsBottomContext.fillText(base+(site), 0, (site-this.midAreaEnd)*_this.denseAreaZoom+10);
+                    }
                 }
 
             },
@@ -142,24 +216,24 @@
                 //放大区碱基数
                 let sequnceMidLenght = 0;
                 for(let i = 0; i < this.zoomAreaConfig.length;i++){
-                    sequnceMidLenght += this.zoomAreaConfig[i].height/this.zoomAreaConfig[i].zoom/this.width;
+                    sequnceMidLenght += this.zoomAreaConfig[i].height/this.zoomAreaConfig[i].zoom/this.denseAreaZoom;
                 }
 
-                let sequnceTopData = this.sequnce.slice(0, baseTop.height/this.width);
-                let sequnceMidData = this.sequnce.slice(baseTop.height/this.width, baseTop.height/this.width+sequnceMidLenght);
-                let sequnceBottomData = this.sequnce.slice(baseTop.height/this.width+sequnceMidLenght, baseTop.height/this.width+sequnceMidLenght+baseBottom.height/this.width);
+                let sequnceTopData = this.sequnce.slice(0, baseTop.height/this.denseAreaZoom);
+                let sequnceMidData = this.sequnce.slice(baseTop.height/this.denseAreaZoom, baseTop.height/this.denseAreaZoom+sequnceMidLenght);
+                let sequnceBottomData = this.sequnce.slice(baseTop.height/this.denseAreaZoom+sequnceMidLenght, baseTop.height/this.denseAreaZoom+sequnceMidLenght+baseBottom.height/this.denseAreaZoom);
 
 
                 for (let i = 0;i<sequnceTopData.length;i++){
                     if(i%10) continue;
                     let base = sequnceTopData[i];
                     baseTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    baseTopContext.fillText(base+(i+_this.start), 0, (i+10)*_this.width);
+                    baseTopContext.fillText(base+(i+_this.start), 0, i*_this.denseAreaZoom+10);
                 }
                 
                 baseMidContext.clearRect(0, 0, baseMid.width, baseMid.height);
 
-                let paintedBase = baseTop.height/this.width;
+                let paintedBase = baseTop.height/this.denseAreaZoom;
                 let paintedHeight = 0;
                 let baseMidIndex = 0;
 
@@ -167,13 +241,13 @@
                     let height = this.zoomAreaConfig[i].height;
                     let zoom = this.zoomAreaConfig[i].zoom;
 
-                    for (let i = 0; i < height/zoom/this.width; i++){
+                    for (let i = 0; i < height/zoom/this.denseAreaZoom; i++){
                         let base = sequnceMidData[baseMidIndex++];
                         if((i+_this.start+paintedBase)%~~(20/zoom) ){continue}
                         baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                        baseMidContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.width*zoom+10+paintedHeight);
+                        baseMidContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom*zoom+10+paintedHeight);
                     }
-                    paintedBase += ~~(height/zoom)/this.width;
+                    paintedBase += ~~(height/zoom)/this.denseAreaZoom;
                     paintedHeight += height;
                 }
                 
@@ -183,7 +257,7 @@
                     if((i+_this.start+paintedBase)%10) continue;
                     let base = sequnceBottomData[i];
                     baseBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    baseBottomContext.fillText(base+(i+_this.start+paintedBase), 0, (i+10)*_this.width);
+                    baseBottomContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom+10);
                 }
             },
             zoom(type, num){
@@ -201,7 +275,7 @@
                 if(type == 'up'){
                     if(num > this.start){
                         this.start = 0;
-                        this.end = this.start + 650;
+                        this.end += this.start ;
                     }else{
                         this.start -= num
                         this.end -= num
@@ -210,15 +284,14 @@
                 if(type == 'down'){
                     if (this.end+num > track.sequnce.length) {
                         this.end = track.sequnce.length;
-                        this.start = this.end - 650;
+                        this.start -= this.end ;
                     }else{
                         this.start += num
                         this.end += num
                     }
                 }
                 this.sequnce = track.sequnce.slice(this.start,this.end);
-                this.drawBase();
-                this.drawSequnce();
+                this.drawAll();
             },
             setZoomAreaConfig(data){
                 if(Object.prototype.toString.call(data) !== '[object Array]'){
@@ -240,6 +313,38 @@
                     }
                 })
                 
+            }
+        },
+        computed: {
+            // 上缩小区长度
+            topBaseLen: function () {
+                return ~~(this.denseAreaHeight/this.denseAreaZoom);
+            },
+            // 放大区长度
+            midBaseLen: function () {
+                let sequnceMidLenght = 0;
+                for(let i = 0; i < this.zoomAreaConfig.length;i++){
+                    sequnceMidLenght += this.zoomAreaConfig[i].height/this.zoomAreaConfig[i].zoom/this.denseAreaZoom;
+                }
+                return sequnceMidLenght;
+            },
+            // 下缩小区长度
+            bottomBaseLen: function () {
+                return ~~(this.denseAreaHeight/this.denseAreaZoom);
+            },
+            // 放大区与上缩小区交界点
+            midAreaStar: function () {
+                return this.start+this.topBaseLen;
+            },
+            // 放大区与下缩小区交界点
+            midAreaEnd: function () {
+                return this.start+this.topBaseLen+this.midBaseLen;
+            },
+            end: {
+                get: function () {
+                    return this.start+this.topBaseLen+this.midBaseLen+this.bottomBaseLen;
+                },
+                set: function (){}
             }
         }
     }
