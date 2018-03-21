@@ -5,10 +5,10 @@
             <div class="param-form">
                 <el-form :inline="true" :model="param" class="demo-form-inline">
                     <el-form-item label="起始位点">
-                        <el-input v-model="param.start" placeholder="起始位点"></el-input>
+                        <el-input v-model.number="param.start" placeholder="起始位点"></el-input>
                     </el-form-item>
                     <el-form-item label="终止位点">
-                        <el-input v-model="param.end" placeholder="终止位点"></el-input>
+                        <el-input v-model.number="param.end" placeholder="终止位点"></el-input>
                     </el-form-item>
                     <el-form-item label="染色体">
                         <el-select v-model="param.chr" placeholder="染色体">
@@ -94,6 +94,8 @@
                     t:"#857AB9",
                     g:"#F9C238",
                     c:"#7AC583",
+                    N:"#333",
+                    n:"#333",
                 },
                 zoomAreaHeight:600,
                 denseAreaHeight:100,
@@ -140,18 +142,18 @@
 
             let track = await axios.get('/api/track/get',{
                 params: {
-                    chr: 'chr1',
-                    start: 1000000,
-                    end: 1001000
+                    chr: this.param.chr,
+                    start: this.param.start,
+                    end: this.param.end
                 }
             })
             console.log(track.data)
             this.originData.sequnce = track.data.sequnce;
-            this.originData.start = 1000000;
-            this.originData.end = 1001000;
+            this.originData.start = Number(this.param.start);
+            this.originData.end = Number(this.param.end);
 
             this.sequnce = this.originData.sequnce.slice(0, this.renderLen*2);
-            this.start = 1000000;
+            this.start = Number(this.param.start);
 
             if(settings.data){
                 this.zoomAreaHeight = settings.data.zoomAreaHeight || 600;
@@ -180,24 +182,28 @@
                 localStorage.start = this.param.start;
                 localStorage.end = this.param.end;
 
-                let track = await axios.get('/api/track/get',{
-                    params: {
-                        chr: this.param.chr,
-                        start: this.param.start,
-                        end: this.param.end
-                    }
-                })
-
-                this.originData.sequnce = track.data.sequnce;
-                this.originData.start = Number(this.param.start);
-                this.originData.end = Number(this.param.end);
-
-                this.sequnce = this.originData.sequnce.slice(0, this.renderLen*2);
+                await this.getSequnce(this.param.chr, this.param.start, this.param.end);
                 this.start = Number(this.param.start);
-
                 this.drawAll();
 
                 console.log(this.param);
+            },
+            async getSequnce(chr, start, end){
+                let track = await axios.get('/api/track/get',{
+                    params: {
+                        chr: chr,
+                        start: start,
+                        end: end
+                    }
+                })
+
+                if(track.data.sequnce)
+                this.originData.sequnce = track.data.sequnce;
+                this.originData.start = Number(start);
+                this.originData.end = Number(end);
+
+                this.sequnce = this.originData.sequnce.slice(0, this.renderLen*2);
+                
             },
             drawAll(){
                 this.drawBase();
@@ -278,7 +284,9 @@
                     let variant = this.variants[i];
                     let id = variant.id, site = variant.site, base = variant.base;
                     if(site < this.midAreaStar && site > this.start){
-                        variantsTopContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site-this.start)*_this.denseAreaZoom+10);
+                        if(base){
+                            variantsTopContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site-this.start)*_this.denseAreaZoom+10);
+                        }
                     }
                     if(site >= this.midAreaStar && site < this.midAreaEnd){
                         let paintedBase = 0, paintedHeight = 0;
@@ -289,9 +297,10 @@
                             console.log(siteInZoomCanvas,paintedBase,paintedBase + height/zoom/this.denseAreaZoom)
 
                             if(siteInZoomCanvas >= paintedBase && siteInZoomCanvas <= paintedBase + height/zoom/this.denseAreaZoom){
-                                
-                                variantsMidContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (siteInZoomCanvas-paintedBase)*_this.denseAreaZoom*zoom+paintedHeight+10);
-                                break;
+                                if(base){
+                                    variantsMidContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (siteInZoomCanvas-paintedBase)*_this.denseAreaZoom*zoom+paintedHeight+10);
+                                    break;
+                                }
                             }
                             paintedBase += height/zoom/this.denseAreaZoom;
                             paintedHeight += height;
@@ -304,7 +313,9 @@
                         console.log('bottom');
                         console.log(site)
                         console.log((site-this.midAreaEnd)*_this.denseAreaZoom+10)
-                        variantsBottomContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site-this.midAreaEnd)*_this.denseAreaZoom+10);
+                        if(base){
+                            variantsBottomContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site-this.midAreaEnd)*_this.denseAreaZoom+10);
+                        }
                     }
                 }
 
@@ -335,11 +346,14 @@
 
                 for (let i = 0;i<sequnceTopData.length;i++){
                     if(i%10) continue;
-                    let base = sequnceTopData[i].toUpperCase();
-                    baseTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    baseTopContext.fillText(base+(i+_this.start), 0, i*_this.denseAreaZoom+10);
+                    let base = sequnceTopData[i]
+                    if(base){
+                        base = base.toUpperCase();
+                        baseTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                        baseTopContext.fillText(base+(i+_this.start), 0, i*_this.denseAreaZoom+10);
+                    }
                 }
-                
+                 
                 baseMidContext.clearRect(0, 0, baseMid.width, baseMid.height);
 
                 let paintedBase = baseTop.height/this.denseAreaZoom;
@@ -351,10 +365,13 @@
                     let zoom = this.zoomAreaConfig[i].zoom;
 
                     for (let i = 0; i < height/zoom/this.denseAreaZoom; i++){
-                        let base = sequnceMidData[baseMidIndex++].toUpperCase();
-                        if((i+_this.start+paintedBase)%~~(20/zoom) ){continue}
-                        baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                        baseMidContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom*zoom+10+paintedHeight);
+                        let base = sequnceMidData[baseMidIndex++]
+                        if(base){
+                            base = base.toUpperCase();
+                            if((i+_this.start+paintedBase)%~~(20/zoom) ){continue}
+                            baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                            baseMidContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom*zoom+10+paintedHeight);
+                        }
                     }
                     paintedBase += ~~(height/zoom)/this.denseAreaZoom;
                     paintedHeight += height;
@@ -364,9 +381,12 @@
 
                 for (let i = 0;i<sequnceBottomData.length;i++){
                     if((i+_this.start+paintedBase)%10) continue;
-                    let base = sequnceBottomData[i].toUpperCase();
-                    baseBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
-                    baseBottomContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom+10);
+                    let base = sequnceBottomData[i]
+                    if(base){
+                        base = base.toUpperCase();
+                        baseBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
+                        baseBottomContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom+10);
+                    }
                 }
             },
             zoom(type, num){
@@ -380,23 +400,31 @@
                 this.translatePercent = -(1-this.scaleTimes)/this.scaleTimes*50;
                 this.drawBase();
             },
-            move(type, num){
+            async move(type, num){
                 if(type == 'up'){
-                    if(this.start - num < this.originData.start){
-                        this.start = this.originData.start;
+                    if(this.start - num < 0){
+                        this.param.start = 0;
+                        this.start = 0;
+                    }
+                    if(this.start - num - this.renderLen*2 < this.originData.start){
+                        this.param.start = Number(this.param.start) - this.renderLen*10;
+                        await this.getSequnce(this.param.chr, this.param.start, this.param.end);
+                        this.start -= num;
+
+
+                        console.log(this.start)
+
+
                     }else{
                         this.start -= num;
                     }
                 }
                 if(type == 'down'){
-                    console.log(this.end + num, this.originData.end)
-
-                    //出界判断
-                    if (this.end + num > this.originData.end) {
-                        console.log(this.originData.end)
-                        console.log(this.renderLen)
-                        console.log(this.originData.end - this.renderLen)
-                        this.start = this.originData.end - this.renderLen;
+                    //预加载
+                    if (this.end + num + this.renderLen*2 > this.originData.end) {
+                        this.param.end = Number(this.param.end) + this.renderLen*10;
+                        this.getSequnce(this.param.chr, this.param.start, this.param.end);
+                        this.start += num;
                     }else{
                         this.start += num
                     }
