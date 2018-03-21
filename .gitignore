@@ -46,4 +46,8 @@ output
 # vscode config
 .vscode
 
-yarn.lock
+yarn-offline-mirror
+
+public/genesome
+
+
