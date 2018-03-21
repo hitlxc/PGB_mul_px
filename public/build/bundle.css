@@ -11,7 +11,7 @@
 }
 
 .track-wrap[data-v-baaa00c2] {
-  width: 800px;
+  width: 1100px;
   max-width: 100%;
   margin: auto;
 }
@@ -19,7 +19,6 @@
   display: flex;
   justify-content: space-around;
   padding: 20px;
-  height: 80px;
 }
 .track-wrap .canvas-wrap[data-v-baaa00c2] {
   width: 100%;

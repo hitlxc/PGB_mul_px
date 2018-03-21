@@ -2,7 +2,7 @@
     "denseAreaHeight": 100,
     "denseAreaZoom": 1,
     "zoomAreaHeight": 600,
-    "step": 400,
+    "step": 200,
     "zoomAreaConfig": [
         {
             "height": 120,

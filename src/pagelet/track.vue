@@ -2,14 +2,52 @@
 
     <div class="track-wrap">
         <div class="tool-bar">
-
-            <div class="move">
-                <i class="el-icon-remove-outline">移动</i>
-                <el-button-group>
-                    <el-button type="primary" @click="move('up',400)" icon="el-icon-arrow-up">向上</el-button>
-                    <el-button type="primary" @click="move('down',400)" icon="el-icon-arrow-down">向下</el-button>
-                </el-button-group>
+            <div class="param-form">
+                <el-form :inline="true" :model="param" class="demo-form-inline">
+                    <el-form-item label="起始位点">
+                        <el-input v-model="param.start" placeholder="起始位点"></el-input>
+                    </el-form-item>
+                    <el-form-item label="终止位点">
+                        <el-input v-model="param.end" placeholder="终止位点"></el-input>
+                    </el-form-item>
+                    <el-form-item label="染色体">
+                        <el-select v-model="param.chr" placeholder="染色体">
+                            <el-option label="chr1" value="chr1"></el-option>
+                            <el-option label="chr2" value="chr2"></el-option>
+                            <el-option label="chr3" value="chr3"></el-option>
+                            <el-option label="chr4" value="chr4"></el-option>
+                            <el-option label="chr5" value="chr5"></el-option>
+                            <el-option label="chr6" value="chr6"></el-option>
+                            <el-option label="chr7" value="chr7"></el-option>
+                            <el-option label="chr8" value="chr8"></el-option>
+                            <el-option label="chr9" value="chr9"></el-option>
+                            <el-option label="chr10" value="chr10"></el-option>
+                            <el-option label="chr11" value="chr11"></el-option>
+                            <el-option label="chr12" value="chr12"></el-option>
+                            <el-option label="chr13" value="chr13"></el-option>
+                            <el-option label="chr14" value="chr14"></el-option>
+                            <el-option label="chr15" value="chr15"></el-option>
+                            <el-option label="chr16" value="chr16"></el-option>
+                            <el-option label="chr17" value="chr17"></el-option>
+                            <el-option label="chr18" value="chr18"></el-option>
+                            <el-option label="chr19" value="chr19"></el-option>
+                            <el-option label="chr20" value="chr20"></el-option>
+                            <el-option label="chr21" value="chr21"></el-option>
+                            <el-option label="chr22" value="chr22"></el-option>
+                            <el-option label="chrX" value="chrX"></el-option>
+                            <el-option label="chrY" value="chrY"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="onParamSubmit">查询</el-button>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="move('up',step)">向上</el-button>
+                        <el-button type="primary" @click="move('down',step)">向下</el-button>
+                    </el-form-item>
+                </el-form>
             </div>
+            
         </div>
         
         <div class="canvas-wrap">
@@ -17,17 +55,17 @@
                 <div class="canvas-top" :style="{ height: denseAreaHeight + 'px' }">
                     <canvas id="base-top" width="50" :height="denseAreaHeight" ></canvas>
                     <canvas id="sequnce-top" width="200" :height="denseAreaHeight" ></canvas>
-                    <canvas id="variants-top" width="200" :height="denseAreaHeight" ></canvas>
+                    <canvas id="variants-top" width="150" :height="denseAreaHeight" ></canvas>
                 </div>
                 <div class="canvas-mid" :style="{ height: zoomAreaHeight + 'px' }">
                     <canvas id="base-mid" width="50" :height="zoomAreaHeight" ></canvas>
                     <canvas id="sequnce-mid" width="200" :height="zoomAreaHeight" ></canvas>
-                    <canvas id="variants-mid" width="200" :height="zoomAreaHeight" ></canvas>
+                    <canvas id="variants-mid" width="150" :height="zoomAreaHeight" ></canvas>
                 </div>
                 <div class="canvas-bottom" :style="{ height: denseAreaHeight + 'px' }">
                     <canvas id="base-bottom" width="50" :height="denseAreaHeight" ></canvas>
                     <canvas id="sequnce-bottom" width="200" :height="denseAreaHeight" ></canvas>
-                    <canvas id="variants-bottom" width="200" :height="denseAreaHeight" ></canvas>
+                    <canvas id="variants-bottom" width="150" :height="denseAreaHeight" ></canvas>
                 </div>
             </div>
         </div>
@@ -51,45 +89,116 @@
                     A:"#FF0066",
                     T:"#857AB9",
                     G:"#F9C238",
-                    C:"#7AC583"
+                    C:"#7AC583",
+                    a:"#FF0066",
+                    t:"#857AB9",
+                    g:"#F9C238",
+                    c:"#7AC583",
                 },
                 zoomAreaHeight:600,
                 denseAreaHeight:100,
+                step:400,
                 zoomAreaConfig:[
                     {height:120,zoom:12},
                     {height:120,zoom:8},
                     {height:120,zoom:30},
                     {height:120,zoom:8},
                     {height:120,zoom:12}
-                ]
+                ],
+                param:{
+                    start: localStorage.start || '',
+                    end: localStorage.end || '',
+                    chr: localStorage.chr || ''
+                },
+                originData:{
+                    sequnce:'',
+                    start:0,
+                    end:0
+                }
             }
         },
         async mounted(){
             console.time('渲染');
 
             let _this = this;
-            await axios.get('/api/setting/get',)
-            .then(function (response) {
-                _this.zoomAreaHeight = response.data.zoomAreaHeight || 600;
-                _this.denseAreaHeight = response.data.denseAreaHeight || 100;
-                _this.denseAreaZoom = response.data.denseAreaZoom || 1;
-                _this.zoomAreaConfig = response.data.zoomAreaConfig || [
+            let settings = await axios.get('/api/setting/get')
+            if(settings.data){
+                this.zoomAreaHeight = settings.data.zoomAreaHeight || 600;
+                this.denseAreaHeight = settings.data.denseAreaHeight || 100;
+                this.denseAreaZoom = settings.data.denseAreaZoom || 1;
+                this.step = settings.data.step || 400;
+                this.zoomAreaConfig = settings.data.zoomAreaConfig || [
                     {height:120,zoom:12},
                     {height:120,zoom:8},
                     {height:120,zoom:30},
                     {height:120,zoom:8},
                     {height:120,zoom:12}
                 ];
+            }else{
+                console.log('获取配置信息出错');
+            }
+
+            let track = await axios.get('/api/track/get',{
+                params: {
+                    chr: 'chr1',
+                    start: 1000000,
+                    end: 1001000
+                }
             })
-            .catch(function (error) {
-                console.log(error);
-            });
+            console.log(track.data)
+            this.originData.sequnce = track.data.sequnce;
+            this.originData.start = 1000000;
+            this.originData.end = 1001000;
+
+            this.sequnce = this.originData.sequnce.slice(0, this.renderLen*2);
+            this.start = 1000000;
+
+            if(settings.data){
+                this.zoomAreaHeight = settings.data.zoomAreaHeight || 600;
+                this.denseAreaHeight = settings.data.denseAreaHeight || 100;
+                this.denseAreaZoom = settings.data.denseAreaZoom || 1;
+                this.zoomAreaConfig = settings.data.zoomAreaConfig || [
+                    {height:120,zoom:12},
+                    {height:120,zoom:8},
+                    {height:120,zoom:30},
+                    {height:120,zoom:8},
+                    {height:120,zoom:12}
+                ];
+            }else{
+                console.log('获取配置信息出错');
+            }
+            
 
             this.drawAll();
             let end = new Date().getTime(); // 结束时间
             console.timeEnd('渲染');
-        },
+        }, 
         methods: {
+            async onParamSubmit(){
+
+                localStorage.chr = this.param.chr;
+                localStorage.start = this.param.start;
+                localStorage.end = this.param.end;
+
+                let track = await axios.get('/api/track/get',{
+                    params: {
+                        chr: this.param.chr,
+                        start: this.param.start,
+                        end: this.param.end
+                    }
+                })
+
+                this.originData.sequnce = track.data.sequnce;
+                this.originData.start = Number(this.param.start);
+                this.originData.end = Number(this.param.end);
+
+                this.sequnce = this.originData.sequnce.slice(0, this.renderLen*2);
+                this.start = Number(this.param.start);
+
+                this.drawAll();
+
+                console.log(this.param);
+            },
             drawAll(){
                 this.drawBase();
                 this.drawSequnce();
@@ -169,7 +278,7 @@
                     let variant = this.variants[i];
                     let id = variant.id, site = variant.site, base = variant.base;
                     if(site < this.midAreaStar && site > this.start){
-                        variantsTopContext.fillText(base+(site), 0, (site-this.start)*_this.denseAreaZoom+10);
+                        variantsTopContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site-this.start)*_this.denseAreaZoom+10);
                     }
                     if(site >= this.midAreaStar && site < this.midAreaEnd){
                         let paintedBase = 0, paintedHeight = 0;
@@ -181,7 +290,7 @@
 
                             if(siteInZoomCanvas >= paintedBase && siteInZoomCanvas <= paintedBase + height/zoom/this.denseAreaZoom){
                                 
-                                variantsMidContext.fillText(base+(site), 0, (siteInZoomCanvas-paintedBase)*_this.denseAreaZoom*zoom+paintedHeight+10);
+                                variantsMidContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (siteInZoomCanvas-paintedBase)*_this.denseAreaZoom*zoom+paintedHeight+10);
                                 break;
                             }
                             paintedBase += height/zoom/this.denseAreaZoom;
@@ -195,7 +304,7 @@
                         console.log('bottom');
                         console.log(site)
                         console.log((site-this.midAreaEnd)*_this.denseAreaZoom+10)
-                        variantsBottomContext.fillText(base+(site), 0, (site-this.midAreaEnd)*_this.denseAreaZoom+10);
+                        variantsBottomContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site-this.midAreaEnd)*_this.denseAreaZoom+10);
                     }
                 }
 
@@ -226,7 +335,7 @@
 
                 for (let i = 0;i<sequnceTopData.length;i++){
                     if(i%10) continue;
-                    let base = sequnceTopData[i];
+                    let base = sequnceTopData[i].toUpperCase();
                     baseTopContext.fillStyle = _this.sequnceColor[base] || '#fff';
                     baseTopContext.fillText(base+(i+_this.start), 0, i*_this.denseAreaZoom+10);
                 }
@@ -242,7 +351,7 @@
                     let zoom = this.zoomAreaConfig[i].zoom;
 
                     for (let i = 0; i < height/zoom/this.denseAreaZoom; i++){
-                        let base = sequnceMidData[baseMidIndex++];
+                        let base = sequnceMidData[baseMidIndex++].toUpperCase();
                         if((i+_this.start+paintedBase)%~~(20/zoom) ){continue}
                         baseMidContext.fillStyle = _this.sequnceColor[base] || '#fff';
                         baseMidContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom*zoom+10+paintedHeight);
@@ -255,7 +364,7 @@
 
                 for (let i = 0;i<sequnceBottomData.length;i++){
                     if((i+_this.start+paintedBase)%10) continue;
-                    let base = sequnceBottomData[i];
+                    let base = sequnceBottomData[i].toUpperCase();
                     baseBottomContext.fillStyle = _this.sequnceColor[base] || '#fff';
                     baseBottomContext.fillText(base+(i+_this.start+paintedBase), 0, i*_this.denseAreaZoom+10);
                 }
@@ -273,24 +382,28 @@
             },
             move(type, num){
                 if(type == 'up'){
-                    if(num > this.start){
-                        this.start = 0;
-                        this.end += this.start ;
+                    if(this.start - num < this.originData.start){
+                        this.start = this.originData.start;
                     }else{
-                        this.start -= num
-                        this.end -= num
+                        this.start -= num;
                     }
                 }
                 if(type == 'down'){
-                    if (this.end+num > track.sequnce.length) {
-                        this.end = track.sequnce.length;
-                        this.start -= this.end ;
+                    console.log(this.end + num, this.originData.end)
+
+                    //出界判断
+                    if (this.end + num > this.originData.end) {
+                        console.log(this.originData.end)
+                        console.log(this.renderLen)
+                        console.log(this.originData.end - this.renderLen)
+                        this.start = this.originData.end - this.renderLen;
                     }else{
                         this.start += num
-                        this.end += num
                     }
                 }
-                this.sequnce = track.sequnce.slice(this.start,this.end);
+
+                this.sequnce = this.originData.sequnce.slice(this.start - this.originData.start , this.end - this.originData.start );
+
                 this.drawAll();
             },
             setZoomAreaConfig(data){
@@ -345,6 +458,9 @@
                     return this.start+this.topBaseLen+this.midBaseLen+this.bottomBaseLen;
                 },
                 set: function (){}
+            },
+            renderLen: function(){
+                return this.end - this.start;
             }
         }
     }
@@ -354,7 +470,7 @@
 
 <style lang="less" scoped>
     .track-wrap{
-        width:800px;
+        width:1100px;
         max-width:100%;
         margin:auto;
         
@@ -363,7 +479,10 @@
             display: flex;
             justify-content: space-around;
             padding: 20px;
-            height: 80px;
+
+            .param-form{
+
+            }
         }
 
 

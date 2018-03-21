@@ -32,13 +32,7 @@ jspm_packages
 # Optional npm cache directory
 .npm
 
-# Optional REPL history
-.node_repl_history
-
 .DS_Store
-
-# scm_build output
-output
 
 # idea config
 .idea
@@ -48,6 +42,8 @@ output
 
 yarn-offline-mirror
 
-public/genesome
+/public/genome
+
+/public/build
 
 
