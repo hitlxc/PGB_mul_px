@@ -51,19 +51,24 @@
         </div>
         
         <div class="canvas-wrap">
+            <div class="canvas-label">
+                <div class="canvas-label-site">位点</div>
+                <div class="canvas-label-sequnce">序列</div>
+                <div class="canvas-label-variant">变异</div>
+            </div>
             <div class="canvas-outer">
                 <div class="canvas-top" :style="{ height: denseAreaHeight + 'px' }">
-                    <canvas id="base-top" width="50" :height="denseAreaHeight" ></canvas>
+                    <canvas id="base-top" width="100" :height="denseAreaHeight" ></canvas>
                     <canvas id="sequnce-top" width="200" :height="denseAreaHeight" ></canvas>
                     <canvas id="variants-top" width="150" :height="denseAreaHeight" ></canvas>
                 </div>
                 <div class="canvas-mid" :style="{ height: zoomAreaHeight + 'px' }">
-                    <canvas id="base-mid" width="50" :height="zoomAreaHeight" ></canvas>
+                    <canvas id="base-mid" width="100" :height="zoomAreaHeight" ></canvas>
                     <canvas id="sequnce-mid" width="200" :height="zoomAreaHeight" ></canvas>
                     <canvas id="variants-mid" width="150" :height="zoomAreaHeight" ></canvas>
                 </div>
                 <div class="canvas-bottom" :style="{ height: denseAreaHeight + 'px' }">
-                    <canvas id="base-bottom" width="50" :height="denseAreaHeight" ></canvas>
+                    <canvas id="base-bottom" width="100" :height="denseAreaHeight" ></canvas>
                     <canvas id="sequnce-bottom" width="200" :height="denseAreaHeight" ></canvas>
                     <canvas id="variants-bottom" width="150" :height="denseAreaHeight" ></canvas>
                 </div>
@@ -137,7 +142,7 @@
                     {height:120,zoom:12}
                 ];
             }else{
-                console.log('获取配置信息出错');
+                console.error('获取配置信息出错');
             }
 
             let track = await axios.get('/api/track/get',{
@@ -147,7 +152,6 @@
                     end: this.param.end
                 }
             })
-            console.log(track.data)
             this.originData.sequnce = track.data.sequnce;
             this.originData.start = Number(this.param.start);
             this.originData.end = Number(this.param.end);
@@ -186,7 +190,6 @@
                 this.start = Number(this.param.start);
                 this.drawAll();
 
-                console.log(this.param);
             },
             async getSequnce(chr, start, end){
                 let track = await axios.get('/api/track/get',{
@@ -294,7 +297,7 @@
                         for(let i = 0; i < this.zoomAreaConfig.length; i++){
                             let height = this.zoomAreaConfig[i].height;
                             let zoom = this.zoomAreaConfig[i].zoom;
-                            console.log(siteInZoomCanvas,paintedBase,paintedBase + height/zoom/this.denseAreaZoom)
+                            //console.log(siteInZoomCanvas,paintedBase,paintedBase + height/zoom/this.denseAreaZoom)
 
                             if(siteInZoomCanvas >= paintedBase && siteInZoomCanvas <= paintedBase + height/zoom/this.denseAreaZoom){
                                 if(base){
@@ -310,9 +313,7 @@
                         variantsTopContext.fillText(base+(site), 0, (site-this.start)*_this.denseAreaZoom+10);
                     }
                     if(site < this.end && site >= this.midAreaEnd){
-                        console.log('bottom');
-                        console.log(site)
-                        console.log((site-this.midAreaEnd)*_this.denseAreaZoom+10)
+                        //console.log((site-this.midAreaEnd)*_this.denseAreaZoom+10)
                         if(base){
                             variantsBottomContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site-this.midAreaEnd)*_this.denseAreaZoom+10);
                         }
@@ -390,7 +391,7 @@
                 }
             },
             zoom(type, num){
-                console.log(type,num)
+                //console.log(type,num)
                 if(type == 'in'){
                     this.scaleTimes *= num; 
                 }
@@ -410,10 +411,6 @@
                         this.param.start = Number(this.param.start) - this.renderLen*10;
                         await this.getSequnce(this.param.chr, this.param.start, this.param.end);
                         this.start -= num;
-
-
-                        console.log(this.start)
-
 
                     }else{
                         this.start -= num;
@@ -517,10 +514,34 @@
         .canvas-wrap{
             width:100%;
             box-sizing: border-box;
-            border:1px solid #000;
+            
+
+            .canvas-label{
+                display: flex;
+
+                & > *{
+                    width: 200px;
+                    text-align: center;
+                    font-weight: 700;
+                    color: #666;
+                }
+
+                &-site{
+                    width: 100px;
+                    text-align: left;
+                }
+                &-sequnce{
+                    width: 200px;
+                }
+                &-variant{
+                    width: 150px;
+                    text-align: left;
+                }
+            }   
 
             .canvas-outer{
                 width:100%;
+                border:1px solid #000;
 
                 .canvas-mid{
                     border: 4px solid;    

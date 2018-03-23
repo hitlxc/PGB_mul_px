@@ -6,11 +6,11 @@
     "zoomAreaConfig": [
         {
             "height": 120,
-            "zoom": 12
+            "zoom": 8
         },
         {
             "height": 120,
-            "zoom": 8
+            "zoom": 12
         },
         {
             "height": 120,
@@ -18,11 +18,11 @@
         },
         {
             "height": 120,
-            "zoom": 8
+            "zoom": 12
         },
         {
             "height": 120,
-            "zoom": 12
+            "zoom": 8
         }
     ]
 }

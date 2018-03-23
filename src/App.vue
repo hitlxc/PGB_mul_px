@@ -1,7 +1,7 @@
 <template>
 		
 	<div class="app">
-		<h1><span>基因组浏览器</span></h1>
+		
 		<navBar></navBar>
 
 		<router-view></router-view>

@@ -13,10 +13,10 @@
 			</el-form-item>
 
 			<template v-for="(zoomArea, index) in form.zoomAreaConfig">
-				<el-form-item :label="'放大区' + (index+1) + '高度'" >
+				<el-form-item :label="(index+1) + '号放大区' + '高度'" >
 			    	<el-input v-model.number="zoomArea.height"></el-input>
 			 	</el-form-item>
-				<el-form-item :label="'放大区' + (index+1) + '倍率'" >
+				<el-form-item :label="(index+1) + '号放大区' + '倍率'" >
 					<el-input v-model.number="zoomArea.zoom"></el-input>
 			 	</el-form-item>
 			 	<el-form-item>
@@ -32,25 +32,6 @@
 				<el-input v-model.number="form.step"></el-input>
 			</el-form-item>
 
-		  <!-- <el-form-item label="活动区域">
-		    <el-select v-model="form.region" placeholder="请选择活动区域">
-		      <el-option label="区域一" value="shanghai"></el-option>
-		      <el-option label="区域二" value="beijing"></el-option>
-		    </el-select>
-		  </el-form-item>
-		  
-		  <el-form-item label="即时配送">
-		    <el-switch v-model="form.delivery"></el-switch>
-		  </el-form-item>
-		  
-		  <el-form-item label="活动性质">
-		    <el-checkbox-group v-model="form.type">
-		      <el-checkbox label="美食/餐厅线上活动" name="type"></el-checkbox>
-		      <el-checkbox label="地推活动" name="type"></el-checkbox>
-		      <el-checkbox label="线下主题活动" name="type"></el-checkbox>
-		      <el-checkbox label="单纯品牌曝光" name="type"></el-checkbox>
-		    </el-checkbox-group>
-		  </el-form-item> -->
 			<el-form-item>
 				<el-button type="primary" @click="onSubmit">提交</el-button>
 				<el-button>取消</el-button>
@@ -157,7 +138,6 @@ import axios from 'axios'
             },
 		    onSubmit(){
 		    	if(this.validateZoomAreaConfig(this.form.zoomAreaConfig)){
-		    		//console.log(JSON.stringify(this.form));
 
 					axios.post('/api/setting/set', {
 					    data: JSON.stringify(this.form, Symbol(""), 4)

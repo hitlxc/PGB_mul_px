@@ -14021,6 +14021,11 @@ module.exports = function (name) {
 //
 //
 //
+//
+//
+//
+//
+//
 
 
 
@@ -14073,7 +14078,7 @@ module.exports = function (name) {
             this.step = settings.data.step || 400;
             this.zoomAreaConfig = settings.data.zoomAreaConfig || [{ height: 120, zoom: 12 }, { height: 120, zoom: 8 }, { height: 120, zoom: 30 }, { height: 120, zoom: 8 }, { height: 120, zoom: 12 }];
         } else {
-            console.log('获取配置信息出错');
+            console.error('获取配置信息出错');
         }
 
         let track = await __WEBPACK_IMPORTED_MODULE_0_axios___default.a.get('/api/track/get', {
@@ -14083,7 +14088,6 @@ module.exports = function (name) {
                 end: this.param.end
             }
         });
-        console.log(track.data);
         this.originData.sequnce = track.data.sequnce;
         this.originData.start = Number(this.param.start);
         this.originData.end = Number(this.param.end);
@@ -14114,8 +14118,6 @@ module.exports = function (name) {
             await this.getSequnce(this.param.chr, this.param.start, this.param.end);
             this.start = Number(this.param.start);
             this.drawAll();
-
-            console.log(this.param);
         },
         async getSequnce(chr, start, end) {
             let track = await __WEBPACK_IMPORTED_MODULE_0_axios___default.a.get('/api/track/get', {
@@ -14223,7 +14225,7 @@ module.exports = function (name) {
                     for (let i = 0; i < this.zoomAreaConfig.length; i++) {
                         let height = this.zoomAreaConfig[i].height;
                         let zoom = this.zoomAreaConfig[i].zoom;
-                        console.log(siteInZoomCanvas, paintedBase, paintedBase + height / zoom / this.denseAreaZoom);
+                        //console.log(siteInZoomCanvas,paintedBase,paintedBase + height/zoom/this.denseAreaZoom)
 
                         if (siteInZoomCanvas >= paintedBase && siteInZoomCanvas <= paintedBase + height / zoom / this.denseAreaZoom) {
                             if (base) {
@@ -14238,9 +14240,7 @@ module.exports = function (name) {
                     variantsTopContext.fillText(base + site, 0, (site - this.start) * _this.denseAreaZoom + 10);
                 }
                 if (site < this.end && site >= this.midAreaEnd) {
-                    console.log('bottom');
-                    console.log(site);
-                    console.log((site - this.midAreaEnd) * _this.denseAreaZoom + 10);
+                    //console.log((site-this.midAreaEnd)*_this.denseAreaZoom+10)
                     if (base) {
                         variantsBottomContext.fillText(`${id}-${site}-${base.toUpperCase()}`, 0, (site - this.midAreaEnd) * _this.denseAreaZoom + 10);
                     }
@@ -14318,7 +14318,7 @@ module.exports = function (name) {
             }
         },
         zoom(type, num) {
-            console.log(type, num);
+            //console.log(type,num)
             if (type == 'in') {
                 this.scaleTimes *= num;
             }
@@ -14338,8 +14338,6 @@ module.exports = function (name) {
                     this.param.start = Number(this.param.start) - this.renderLen * 10;
                     await this.getSequnce(this.param.chr, this.param.start, this.param.end);
                     this.start -= num;
-
-                    console.log(this.start);
                 } else {
                     this.start -= num;
                 }
@@ -14742,25 +14740,6 @@ module.exports = Cancel;
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -14846,7 +14825,6 @@ module.exports = Cancel;
 								},
 								onSubmit() {
 												if (this.validateZoomAreaConfig(this.form.zoomAreaConfig)) {
-																//console.log(JSON.stringify(this.form));
 
 																__WEBPACK_IMPORTED_MODULE_0_axios___default.a.post('/api/setting/set', {
 																				data: JSON.stringify(this.form, Symbol(""), 4)
@@ -19677,18 +19655,11 @@ var render = function() {
   return _c(
     "div",
     { staticClass: "app" },
-    [_vm._m(0), _vm._v(" "), _c("navBar"), _vm._v(" "), _c("router-view")],
+    [_c("navBar"), _vm._v(" "), _c("router-view")],
     1
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("h1", [_c("span", [_vm._v("基因组浏览器")])])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 if (false) {
@@ -20870,6 +20841,8 @@ var render = function() {
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "canvas-wrap" }, [
+      _vm._m(0),
+      _vm._v(" "),
       _c("div", { staticClass: "canvas-outer" }, [
         _c(
           "div",
@@ -20881,7 +20854,7 @@ var render = function() {
             _c("canvas", {
               attrs: {
                 id: "base-top",
-                width: "50",
+                width: "100",
                 height: _vm.denseAreaHeight
               }
             }),
@@ -20912,7 +20885,11 @@ var render = function() {
           },
           [
             _c("canvas", {
-              attrs: { id: "base-mid", width: "50", height: _vm.zoomAreaHeight }
+              attrs: {
+                id: "base-mid",
+                width: "100",
+                height: _vm.zoomAreaHeight
+              }
             }),
             _vm._v(" "),
             _c("canvas", {
@@ -20943,7 +20920,7 @@ var render = function() {
             _c("canvas", {
               attrs: {
                 id: "base-bottom",
-                width: "50",
+                width: "100",
                 height: _vm.denseAreaHeight
               }
             }),
@@ -20969,7 +20946,20 @@ var render = function() {
     ])
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "canvas-label" }, [
+      _c("div", { staticClass: "canvas-label-site" }, [_vm._v("位点")]),
+      _vm._v(" "),
+      _c("div", { staticClass: "canvas-label-sequnce" }, [_vm._v("序列")]),
+      _vm._v(" "),
+      _c("div", { staticClass: "canvas-label-variant" }, [_vm._v("变异")])
+    ])
+  }
+]
 render._withStripped = true
 
 if (false) {
@@ -21129,7 +21119,7 @@ var render = function() {
             return [
               _c(
                 "el-form-item",
-                { attrs: { label: "放大区" + (index + 1) + "高度" } },
+                { attrs: { label: index + 1 + "号放大区" + "高度" } },
                 [
                   _c("el-input", {
                     model: {
@@ -21146,7 +21136,7 @@ var render = function() {
               _vm._v(" "),
               _c(
                 "el-form-item",
-                { attrs: { label: "放大区" + (index + 1) + "倍率" } },
+                { attrs: { label: index + 1 + "号放大区" + "倍率" } },
                 [
                   _c("el-input", {
                     model: {

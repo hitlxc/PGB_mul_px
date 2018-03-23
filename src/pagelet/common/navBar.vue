@@ -28,6 +28,15 @@
 </script>
 
 <style lang="less" scoped>
-	
+	li{
+		    padding: 0;
+
+		a{
+			width: 100%;
+		    height: 100%;
+		    display: inline-block;
+		    padding: 0 20px;
+		}
+	}
 
 </style>
