@@ -1,5 +1,9 @@
 /dist
 
+/public/genome
+
+package-lock.json
+
 # Logs
 logs
 *.log
