@@ -31,6 +31,7 @@ router.get('/track/get', function(req, res, next) {
 		    	sequnce:'',
 		    	len:0
 		    });
+		    return;
 		}
 
 		let realStart = start + chr.length + start/50 + 2;

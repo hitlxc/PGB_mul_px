@@ -113,8 +113,8 @@
                     {height:120,zoom:12}
                 ],
                 param:{
-                    start: localStorage.start || '',
-                    end: localStorage.end || '',
+                    start: Number(localStorage.start) || 1,
+                    end: Number(localStorage.end) || 1000,
                     chr: localStorage.chr || ''
                 },
                 originData:{
@@ -403,14 +403,14 @@
             },
             async move(type, num){
                 if(type == 'up'){
-                    if(this.start - num < 0){
-                        this.param.start = 0;
-                        this.start = 0;
+                    if(this.start - num < 1){
+                        this.param.start = 1;
+                        this.start = 1;
                     }
                     if(this.start - num - this.renderLen*2 < this.originData.start){
-                        this.param.start = Number(this.param.start) - this.renderLen*10;
+                        this.param.start = Math.max(Number(this.param.start) - this.renderLen*10, 1);
                         await this.getSequnce(this.param.chr, this.param.start, this.param.end);
-                        this.start -= num;
+                        this.start = Math.max(this.start-num, 1);
 
                     }else{
                         this.start -= num;
